@@ -1,0 +1,39 @@
+{
+  "title":"小红书数据获取", 
+  "selectGroup": {
+    "selectAll": "全选",
+    "videoInfo": {
+      "title": "标题",
+      "uploader": "博主",
+      "releaseTime": "发布时间",
+      "lastUpdateTime": "最后更新时间",
+      "collectionCount": "收藏量",
+      "likeCount": "点赞量",
+      "shareCount": "转发量",
+      "commentCount": "评论量",
+      "totalInterCount": "总互动量",
+      "fetchDataTime": "数据获取时间"
+    }
+  },
+  "alerts": {
+    "selectNumberField": "依据小红书文章链接，获取浏览量、点赞量等数据",
+    "selectGroupFieldTip": "插件可自动创建所选字段。如需映射，请确保多维表格中的字段名称和选项名称一致，建议“博主”字段类型为文本，“xx量”字段类型为数字， “xx时间”字段为日期。“总互动量”字段可进行多字段计算"
+  },
+  "labels": {
+    "link": "链接",
+    "cookie": "Cookie"
+  },
+  "checks": {
+    "number": "类型校验失败：类型不是数字",
+    "text": "类型校验失败：类型不是文本",
+    "datetime": "类型校验失败：类型不是日期",
+    "attachment": "类型校验失败：类型不是附件"
+  },
+  "placeholder": {
+    "link": "请选择视频链接对应的字段列",
+    "interCount": "请选择所有需要计算的字段列",
+    "cookie": "请参照帮助输入 cookie"
+  },
+  "detailMode": "开启详细模式",
+  "submit": "获取数据"
+} 

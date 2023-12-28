@@ -1,0 +1,40 @@
+{
+  "title": "Bilibili Video Data Retrieval",
+  "selectGroup": {
+    "selectAll": "Select All",
+    "videoInfo": {
+      "title": "Video Title",
+      "uploader": "Uploader",
+      "releaseTime": "Release Time",
+      "danmuCount": "Danmu Count",
+      "coinCount": "Coin Count",
+      "viewCount": "View Count",
+      "collectionCount": "Collection Count",
+      "likeCount": "Like Count",
+      "shareCount": "Share Count",
+      "commentCount": "Comment Count",
+      "totalInterCount": "Total Interaction Count",
+      "commentWc": "Comment Word Cloud",
+      "danmuWc": "Danmu Word Cloud",
+      "fetchDataTime": "Data Retrieval Time"
+    }
+  },
+  "alerts": {
+    "selectNumberField": "Retrieve views, comments, and other data based on the Bilibili video link",
+    "selectGroupFieldTip": "The plugin can automatically create selected fields. To map, ensure the field names in the multidimensional table match the option names. It's recommended that the 'Uploader' field type is text, 'xx Count' fields are numeric, and 'Release Time' field is a date. 'Total Interaction Count' field can involve calculations from multiple fields"
+  },
+  "labels": {
+    "link": "Link"
+  },
+  "checks": {
+    "number": "Type Verification Failed: Type is not a number",
+    "text": "Type Verification Failed: Type is not text",
+    "datetime": "Type Verification Failed: Type is not a date",
+    "attachment": "Type Verification Failed: Type is not an attachment"
+  },
+  "placeholder": {
+    "link": "Please select the field column corresponding to the video link",
+    "interCount": "Please select all fields that need to be calculated"
+  },
+  "submit": "Retrieve Data"
+}

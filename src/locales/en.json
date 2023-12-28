@@ -1,30 +1,27 @@
 {
-  "title": "Bilibili Video Data Retrieval",
+  "title": "Xiaohongshu Data Retrieval",
   "selectGroup": {
     "selectAll": "Select All",
     "videoInfo": {
-      "title": "Video Title",
-      "uploader": "Uploader",
+      "title": "Title",
+      "uploader": "Blogger",
       "releaseTime": "Release Time",
-      "danmuCount": "Danmu Count",
-      "coinCount": "Coin Count",
-      "viewCount": "View Count",
+      "lastUpdateTime": "Last Update Time",
       "collectionCount": "Collection Count",
-      "likeCount": "Like Count",
+      "likeCount": "Likes Count",
       "shareCount": "Share Count",
       "commentCount": "Comment Count",
       "totalInterCount": "Total Interaction Count",
-      "commentWc": "Comment Word Cloud",
-      "danmuWc": "Danmu Word Cloud",
       "fetchDataTime": "Data Retrieval Time"
     }
   },
   "alerts": {
-    "selectNumberField": "Retrieve views, comments, and other data based on the Bilibili video link",
-    "selectGroupFieldTip": "The plugin can automatically create selected fields. To map, ensure the field names in the multidimensional table match the option names. It's recommended that the 'Uploader' field type is text, 'xx Count' fields are numeric, and 'Release Time' field is a date. 'Total Interaction Count' field can involve calculations from multiple fields"
+    "selectNumberField": "Retrieve data like title, likes count, etc., based on Xiaohongshu article link",
+    "selectGroupFieldTip": "Plugin can automatically create selected fields. For mapping, ensure the field names in the multidimensional table match the option names. Suggest text type for 'Blogger', number type for 'xx Count', and date type for 'xx Time'. 'Total Interaction Count' can be computed from multiple fields"
   },
   "labels": {
-    "link": "Link"
+    "link": "Link",
+    "cookie": "Cookie"
   },
   "checks": {
     "number": "Type Verification Failed: Type is not a number",
@@ -34,7 +31,9 @@
   },
   "placeholder": {
     "link": "Please select the field column corresponding to the video link",
-    "interCount": "Please select all fields that need to be calculated"
+    "interCount": "Please select all fields to be calculated",
+    "cookie": "Please refer to the help for entering cookie"
   },
+  "detailMode": "Enable Detailed Mode",
   "submit": "Retrieve Data"
 }

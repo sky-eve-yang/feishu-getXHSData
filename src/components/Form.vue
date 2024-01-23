@@ -2,6 +2,14 @@
   <el-form ref="form" class="form" label-position="left">
     <div style="width: 100%;padding-left: 10px;border-left: 5px solid #2598f8;margin-bottom: 20px;padding-top: 5px;">{{ $t('title') }}</div>
     <el-alert style="margin: 20px 0;color: #606266;" :title="$t('alerts.selectNumberField')" type="info" />
+    <div class="helper-doc">
+      <span>{{ $t('helpTip') }}</span>
+      <span style="height: 16px;width: 16px;margin-left: 12px;">
+        <a href="https://jfsq6znqku.feishu.cn/wiki/T4z9wWK88inr5zkQqhtcwUCSnSf?from=from_copylink" target="_blank"><span>说明文档</span></a>
+      </span>
+      
+    </div>
+    
 
     <el-form-item style="margin-top: 40px;" :label="$t('labels.link')" size="large" required>
       <el-select v-model="linkFieldId" :placeholder="$t('placeholder.link')" style="width: 100%">
@@ -41,9 +49,7 @@
     <div style="display: flex;flex-direction: row;align-items: center;">
       <el-checkbox v-model="isDetailMode" :label="t('detailMode')" size="large" />
 
-      <div style="height: 16px;width: 16px;margin-left: 12px;">
-        <a href="https://jfsq6znqku.feishu.cn/wiki/T4z9wWK88inr5zkQqhtcwUCSnSf?from=from_copylink" target="_blank"><img style="height: 100%;width: 100%;" src="/public/help.svg" /></a>
-      </div>
+      
       
     </div>
 
@@ -127,6 +133,7 @@ const checkedFieldsToMap = ref([
 const toCalcInterCount = ref(['likeCount','collectionCount', 'shareCount', 'commentCount'])  // 实际用于计算“总交互量”的字段
 const allToCalcInterCount = ref({})  // 可用于计算"总交互量"的字段
 const cookie = ref('')
+const isForcedEnd = ref(false)
 
 const issubmitAbled = computed(() => {
   if (!isDetailMode.value)
@@ -142,38 +149,26 @@ const mappedFieldIds = ref({})
 // -- 核心算法区域
 // --001== 写入数据
 const writeData = async () => {
-  // 获取字段数据Ids object类型
+  if (isWritingData.value) {
+    isForcedEnd.value = true
+  }
   isWritingData.value = true
 
-  {
-    const mappedFields = getSelectedFieldsId(fieldListSeView.value, checkedFieldsToMap.value)
-    console.log("writeData() >> original mappedFields", mappedFields)
-    if (typeof mappedFields == 'string') // 错误处理，提示格式错误 
-    {
-      await bitable.ui.showToast({
-        toastType: 'warning',
-        message: mappedFields
-      })
-      isWritingData.value = false
-      return
-    }
-
-    // 创建缺少的字段
-    mappedFieldIds.value = mappedFields
-    await createFields()
-
-    console.log("writeData() >> finished mappedFieldIds", mappedFieldIds.value)
-  }
+  // 获取字段数据Ids object类型，匹配已有的字段，创建缺少的字段
+  // @status {mappedFieldIds, isWritingData}  表示是命令性质的方法，改变mappedFieldIds对象的状态
+  await completeMappedFieldIdsValue() 
+  console.log("writeData() >> finished mappedFieldIds", mappedFieldIds.value)
+  
   // 加载bitable实例
   const { tableId, viewId } = await bitable.base.getSelection();
   const table = await bitable.base.getActiveTable();
   const view = await table.getViewById(viewId);
 
   // ## mode1: 全部记录
-  // const RecordList = await view.getVisibleRecordIdList()
+  const RecordList = await view.getVisibleRecordIdList()
 
   // ## model2: 交互式选择记录 
-  const RecordList = await bitable.ui.selectRecordIdList(tableId, viewId);
+  // const RecordList = await bitable.ui.selectRecordIdList(tableId, viewId);
 
   localStorage.setItem('cookie', cookie.value)   // string 类型
   localStorage.setItem('isDetailMode', isDetailMode.value)   // string 类型
@@ -181,15 +176,47 @@ const writeData = async () => {
   for (let recordId of RecordList) {
     // TODO：在这里书写处理逻辑——数据请求、数据写入等
     // 非空处理
+    // 强制退出动作
+    if (isForcedEnd.value) {
+      return
+    }
     console.log("writeData() >> recordId", recordId)
+
+
+    // 错误处理，链接字段格式错误，应为文本类型
+    const linkField = await table.getFieldMetaById(linkFieldId.value)
+    if (linkField.type !== 1) {
+      await bitable.ui.showToast({
+        toastType: 'warning',
+        message: `[${linkField.name}] ${t('errorTip.errorLinkType')}`
+      })
+      isWritingData.value = false
+      return
+    }
     
+    // 错误处理：链接地址为空
     let noteLink
     try {
       noteLink = await getCellValueByRFIDS(recordId, linkFieldId.value)
     } catch (error) {
-      continue
-      
+      await bitable.ui.showToast({
+        toastType: 'warning',
+        message: t('errorTip.emptyNoteLink')
+      })
+      continue;
     }
+
+
+    // 错误处理：链接格式错误
+    if (!noteLink.includes('xiaohongshu')) {
+      await bitable.ui.showToast({
+        toastType: 'warning',
+        message: t('errorTip.errorLink')
+      })
+      continue;
+    }
+
+
     console.log("writeData() >> noteLink", noteLink)
     let totalNoteInfo;
     try {
@@ -198,9 +225,8 @@ const writeData = async () => {
     } catch (error) {
       await bitable.ui.showToast({
         toastType: 'warning',
-        message: error.message
+        message: t('errorTip.errorRequest')
       })
-      isWritingData.value = false
       return;
     }
     
@@ -276,7 +302,8 @@ const getSelectedFieldsId = (fieldList, checkedFields) => {
 */
 const getXHSdatabylink = async (path, noteLink) => {
   
-  var url = `https://getXHSDataByLink.1326906378.repl.co/${path}`
+  // var url = `https://getXHSDataByLink.1326906378.repl.co/${path}`
+  var url = `https://b38518d2-23ba-4ef1-bb13-9d8618f01f35-00-271zcrskr9ata.worf.replit.dev/${path}`
   let res;
 
   if (path === 'get_xhs_rough_data') {
@@ -423,6 +450,28 @@ const getDataByCheckedFields = async(noteLink) => {
   return {basicInfo}
 }
 
+/** --006== 补全mappedFieldIds对象的值，使得拿到所有字段数据Ids object类型
+ * 匹配已有的字段，创建缺少的字段
+ * @status {mappedFieldIds, isWritingData}  表示是命令性质的方法，改变mappedFieldIds对象的状态
+ */ 
+const completeMappedFieldIdsValue = async () => {
+  // 匹配已有的字段
+  const mappedFields = getSelectedFieldsId(fieldListSeView.value, checkedFieldsToMap.value)
+  console.log("writeData() >> original mappedFields", mappedFields)
+  if (typeof mappedFields == 'string') {// 错误处理，提示格式错误 
+    await bitable.ui.showToast({
+      toastType: 'warning',
+      message: mappedFields
+    })
+    isWritingData.value = false
+    return
+  }
+
+  // 创建缺少的字段
+  mappedFieldIds.value = mappedFields
+  await createFields()
+}
+
 
 // Map==全选事件
 const handlecheckAllToMapChange = (val) => {
@@ -484,5 +533,15 @@ onMounted(async () => {
 
 
 <style scoped>
+.helper-doc {
   
+  margin-top: -10px;
+  font-size: 14px;
+}
+.helper-doc a {
+  color: #409eff;
+}
+.helper-doc a:hover {
+  color: #7abcff;
+}
 </style>

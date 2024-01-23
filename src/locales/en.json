@@ -1,5 +1,5 @@
 {
-  "title": "Xiaohongshu Data Retrieval",
+  "title": "Little Red Book Data Retrieval",
   "selectGroup": {
     "selectAll": "Select All",
     "videoInfo": {
@@ -8,7 +8,7 @@
       "releaseTime": "Release Time",
       "lastUpdateTime": "Last Update Time",
       "collectionCount": "Collection Count",
-      "likeCount": "Likes Count",
+      "likeCount": "Like Count",
       "shareCount": "Share Count",
       "commentCount": "Comment Count",
       "totalInterCount": "Total Interaction Count",
@@ -16,24 +16,31 @@
     }
   },
   "alerts": {
-    "selectNumberField": "Retrieve data like title, likes count, etc., based on Xiaohongshu article link",
-    "selectGroupFieldTip": "Plugin can automatically create selected fields. For mapping, ensure the field names in the multidimensional table match the option names. Suggest text type for 'Blogger', number type for 'xx Count', and date type for 'xx Time'. 'Total Interaction Count' can be computed from multiple fields"
+    "selectNumberField": "Retrieve data like title, like count, etc., based on Little Red Book article links",
+    "selectGroupFieldTip": "The plugin can automatically create selected fields. If mapping is required, ensure the field names in the multi-dimensional table match the option names. Suggest setting 'Blogger' field type to text, 'xx count' field type to number, and 'xx time' field to date. 'Total Interaction Count' field can be calculated from multiple fields"
   },
   "labels": {
     "link": "Link",
     "cookie": "Cookie"
   },
   "checks": {
-    "number": "Type Verification Failed: Type is not a number",
-    "text": "Type Verification Failed: Type is not text",
-    "datetime": "Type Verification Failed: Type is not a date",
-    "attachment": "Type Verification Failed: Type is not an attachment"
+    "number": "Type Check Failed: Type is not a number",
+    "text": "Type Check Failed: Type is not text",
+    "datetime": "Type Check Failed: Type is not a date",
+    "attachment": "Type Check Failed: Type is not an attachment"
   },
   "placeholder": {
     "link": "Please select the field column corresponding to the video link",
-    "interCount": "Please select all fields to be calculated",
-    "cookie": "Please refer to the help for entering cookie"
+    "interCount": "Please select all the field columns that need to be calculated",
+    "cookie": "Please enter the cookie as per the help guide"
   },
   "detailMode": "Enable Detailed Mode",
-  "submit": "Retrieve Data"
+  "submit": "Retrieve Data",
+  "helpTip": "For the help guide, please see here 👉️",
+  "errorTip": {
+    "emptyNoteLink": "Incorrect article link address",
+    "errorLink": "Incorrect link format, please refer to the documentation",
+    "errorLinkType": "Incorrect field type, please set as text type",
+    "errorRequest": "Cookie error or request timed out"
+  }
 }

@@ -35,5 +35,12 @@
     "cookie": "请参照帮助输入 cookie"
   },
   "detailMode": "开启详细模式",
-  "submit": "获取数据"
+  "submit": "获取数据",
+  "helpTip": "帮助指南请查看这里 👉️",
+  "errorTip": {
+    "emptyNoteLink": "文章链接地址错误",
+    "errorLink": "链接格式错误，请查看说明文档",
+    "errorLinkType": "字段类型错误，请设置为文本类型",
+    "errorRequest": "Cookie 错误或请求超时"
+  }
 } 

@@ -16,12 +16,13 @@
     }
   },
   "alerts": {
-    "selectNumberField": "Retrieve data like title, like count, etc., based on Little Red Book article links",
-    "selectGroupFieldTip": "The plugin can automatically create selected fields. If mapping is required, ensure the field names in the multi-dimensional table match the option names. Suggest setting 'Blogger' field type to text, 'xx count' field type to number, and 'xx time' field to date. 'Total Interaction Count' field can be calculated from multiple fields"
+    "selectNumberField": "Retrieve data such as title, like count, etc., based on Little Red Book article links",
+    "selectGroupFieldTip": "The plugin can automatically create selected fields. For mapping, ensure the field names in the multi-dimensional table match the option names. 'Blogger' field type suggested as text, 'xx count' as number, and 'xx time' as date. 'Total Interaction Count' field can be calculated from multiple fields"
   },
   "labels": {
     "link": "Link",
-    "cookie": "Cookie"
+    "cookie": "Cookie",
+    "xSCommon": "X-S-Common"
   },
   "checks": {
     "number": "Type Check Failed: Type is not a number",
@@ -32,7 +33,8 @@
   "placeholder": {
     "link": "Please select the field column corresponding to the video link",
     "interCount": "Please select all the field columns that need to be calculated",
-    "cookie": "Please enter the cookie as per the help guide"
+    "cookie": "Please enter the cookie as per the help guide",
+    "xSCommon": "Please enter X-S-Common as per the help guide"
   },
   "detailMode": "Enable Detailed Mode",
   "submit": "Retrieve Data",
@@ -43,6 +45,5 @@
     "errorLinkType": "Incorrect field type, please set as text type",
     "errorRequest": "Cookie error or request timed out"
   },
-  "finishTip": "Data acquisition complete, number of failed requests:"
-
+  "finishTip": "Data retrieval complete, number of failed requests:"
 }

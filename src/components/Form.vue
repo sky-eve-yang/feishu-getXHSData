@@ -1,5 +1,5 @@
 <template>
-  <el-form ref="form" class="form" label-position="left">
+  <el-form ref="form" class="form" label-position="top">
     <div style="width: 100%;padding-left: 10px;border-left: 5px solid #2598f8;margin-bottom: 20px;padding-top: 5px;">{{ $t('title') }}</div>
     <el-alert style="margin: 20px 0;color: #606266;" :title="$t('alerts.selectNumberField')" type="info" />
     <div class="helper-doc">
@@ -52,9 +52,14 @@
       
       
     </div>
-
+  
     <el-form-item v-if="isDetailMode" style="margin-top: 20px;" :label="$t('labels.cookie')" size="large" required>
       <el-input v-model="cookie" type="text" :placeholder="$t('placeholder.cookie')"></el-input>
+      
+    </el-form-item>
+    <el-form-item v-if="isDetailMode" style="margin-top: 20px;" :label="$t('labels.xSCommon')" size="large" required>
+      <el-input v-model="xSCommon" type="text" :placeholder="$t('placeholder.xSCommon')"></el-input>
+      
     </el-form-item>
 
     <!-- 选择对应的字段映射 -->
@@ -63,6 +68,8 @@
     <!-- 提交按钮 -->
     <el-button v-loading="isWritingData" @click="writeData" :disabled="!issubmitAbled" color="#3370ff" type="primary" plain size="large">{{ $t('submit') }}</el-button>
   </el-form>
+    
+  
 </template>
 
 <script setup>
@@ -133,6 +140,7 @@ const checkedFieldsToMap = ref([
 const toCalcInterCount = ref(['likeCount','collectionCount', 'shareCount', 'commentCount'])  // 实际用于计算“总交互量”的字段
 const allToCalcInterCount = ref({})  // 可用于计算"总交互量"的字段
 const cookie = ref('')
+const xSCommon = ref('')
 const isForcedEnd = ref(false)
 const errorCount = ref(0)
 
@@ -140,7 +148,7 @@ const issubmitAbled = computed(() => {
   if (!isDetailMode.value)
     return linkFieldId.value && checkedFieldsToMap.value.length
   else 
-    return linkFieldId.value && checkedFieldsToMap.value.length && cookie.value
+    return linkFieldId.value && checkedFieldsToMap.value.length && cookie.value && xSCommon.value
 
 })  // 是否允许提交，及必选字段是否都填写
 
@@ -172,6 +180,7 @@ const writeData = async () => {
   // const RecordList = await bitable.ui.selectRecordIdList(tableId, viewId);
 
   localStorage.setItem('cookie', cookie.value)   // string 类型
+  localStorage.setItem('xSCommon', xSCommon.value)   // string 类型
   localStorage.setItem('isDetailMode', isDetailMode.value)   // string 类型
 
   for (let recordId of RecordList) {
@@ -305,8 +314,8 @@ const getSelectedFieldsId = (fieldList, checkedFields) => {
 */
 const getXHSdatabylink = async (path, noteLink) => {
   
-  var url = `https://get-xhs-data-by-link-1326906378.replit.app/${path}`
-  // var url = `https://b38518d2-23ba-4ef1-bb13-9d8618f01f35-00-271zcrskr9ata.worf.replit.dev/${path}`
+  // var url = `https://get-xhs-data-by-link-1326906378.replit.app/${path}`
+  var url = `https://b38518d2-23ba-4ef1-bb13-9d8618f01f35-00-271zcrskr9ata.worf.replit.dev/${path}`
   let res;
 
   if (path === 'get_xhs_rough_data') {
@@ -331,7 +340,8 @@ const getXHSdatabylink = async (path, noteLink) => {
   } else if (path === 'get_xhs_detail_data') { // 获取详细数据，需要进行接口归一化处理
     var data = qs.stringify({
       'url': noteLink,
-      'cookie': cookie.value
+      'cookie': cookie.value,
+      'xSCommon': xSCommon.value
     });
 
     var config = {
@@ -526,6 +536,9 @@ onMounted(async () => {
   }
   if (localStorage.getItem('cookie') !== null) {  // string 类型
     cookie.value = localStorage.getItem('cookie')
+  }
+  if (localStorage.getItem('xSCommon') !== null) {  // string 类型
+    xSCommon.value = localStorage.getItem('xSCommon')
   }
   
 

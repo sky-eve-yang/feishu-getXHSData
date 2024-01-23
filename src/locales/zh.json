@@ -21,7 +21,8 @@
   },
   "labels": {
     "link": "链接",
-    "cookie": "Cookie"
+    "cookie": "Cookie",
+    "xSCommon": "X-S-Common"
   },
   "checks": {
     "number": "类型校验失败：类型不是数字",
@@ -32,7 +33,8 @@
   "placeholder": {
     "link": "请选择视频链接对应的字段列",
     "interCount": "请选择所有需要计算的字段列",
-    "cookie": "请参照帮助输入 cookie"
+    "cookie": "请参照说明文档输入 cookie",
+    "xSCommon": "请参照说明文档输入 X-S-Common"
   },
   "detailMode": "开启详细模式",
   "submit": "获取数据",

@@ -42,5 +42,8 @@
     "errorLink": "Incorrect link format, please refer to the documentation",
     "errorLinkType": "Incorrect field type, please set as text type",
     "errorRequest": "Cookie error or request timed out"
-  }
+  },
+  "finishTip": "Data acquisition complete, number of failed requests:"
+
+  "finishTip": "数据获取完成, 请求失败数："
 }

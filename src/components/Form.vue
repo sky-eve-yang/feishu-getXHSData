@@ -134,6 +134,7 @@ const toCalcInterCount = ref(['likeCount','collectionCount', 'shareCount', 'comm
 const allToCalcInterCount = ref({})  // 可用于计算"总交互量"的字段
 const cookie = ref('')
 const isForcedEnd = ref(false)
+const errorCount = ref(0)
 
 const issubmitAbled = computed(() => {
   if (!isDetailMode.value)
@@ -203,6 +204,7 @@ const writeData = async () => {
         toastType: 'warning',
         message: t('errorTip.emptyNoteLink')
       })
+      errorCount.value ++
       continue;
     }
 
@@ -213,6 +215,7 @@ const writeData = async () => {
         toastType: 'warning',
         message: t('errorTip.errorLink')
       })
+      errorCount.value ++
       continue;
     }
 
@@ -254,7 +257,7 @@ const writeData = async () => {
   isWritingData.value = false
   await bitable.ui.showToast({
     toastType: 'success',
-    message: '数据获取完成'
+    message: `${t('finishTip')} ${errorCount.value}`
   })
 
   
@@ -302,7 +305,7 @@ const getSelectedFieldsId = (fieldList, checkedFields) => {
 */
 const getXHSdatabylink = async (path, noteLink) => {
   
-  var url = `https://getXHSDataByLink.1326906378.repl.co/${path}`
+  var url = `https://get-xhs-data-by-link-1326906378.replit.app/${path}`
   // var url = `https://b38518d2-23ba-4ef1-bb13-9d8618f01f35-00-271zcrskr9ata.worf.replit.dev/${path}`
   let res;
 

@@ -314,8 +314,8 @@ const getSelectedFieldsId = (fieldList, checkedFields) => {
 */
 const getXHSdatabylink = async (path, noteLink) => {
   
-  // var url = `https://get-xhs-data-by-link-1326906378.replit.app/${path}`
-  var url = `https://b38518d2-23ba-4ef1-bb13-9d8618f01f35-00-271zcrskr9ata.worf.replit.dev/${path}`
+  var url = `https://get-xhs-data-by-link-1326906378.replit.app/${path}`
+  // var url = `https://b38518d2-23ba-4ef1-bb13-9d8618f01f35-00-271zcrskr9ata.worf.replit.dev/${path}`
   let res;
 
   if (path === 'get_xhs_rough_data') {

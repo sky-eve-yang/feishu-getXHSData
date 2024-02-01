@@ -12,8 +12,13 @@
       "shareCount": "转发量",
       "commentCount": "评论量",
       "totalInterCount": "总互动量",
-      "fetchDataTime": "数据获取时间"
+      "fetchDataTime": "数据获取时间",
+      "link": "链接",
+      "errorTip": "报错信息"
     }
+  },
+  "history": {
+    "tableName": "历史记录"
   },
   "alerts": {
     "selectNumberField": "依据小红书文章链接，获取标题、点赞量等数据",

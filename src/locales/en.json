@@ -1,5 +1,5 @@
 {
-  "title": "Little Red Book Data Retrieval",
+  "title": "Xiaohongshu Data Retrieval",
   "selectGroup": {
     "selectAll": "Select All",
     "videoInfo": {
@@ -8,16 +8,21 @@
       "releaseTime": "Release Time",
       "lastUpdateTime": "Last Update Time",
       "collectionCount": "Collection Count",
-      "likeCount": "Like Count",
+      "likeCount": "Likes Count",
       "shareCount": "Share Count",
       "commentCount": "Comment Count",
       "totalInterCount": "Total Interaction Count",
-      "fetchDataTime": "Data Retrieval Time"
+      "fetchDataTime": "Data Retrieval Time",
+      "link": "Link",
+      "errorTip": "Error Message"
     }
   },
+  "history": {
+    "tableName": "History Records"
+  },
   "alerts": {
-    "selectNumberField": "Retrieve data such as title, like count, etc., based on Little Red Book article links",
-    "selectGroupFieldTip": "The plugin can automatically create selected fields. For mapping, ensure the field names in the multi-dimensional table match the option names. 'Blogger' field type suggested as text, 'xx count' as number, and 'xx time' as date. 'Total Interaction Count' field can be calculated from multiple fields"
+    "selectNumberField": "Retrieve data like title, likes count, etc., based on Xiaohongshu article link",
+    "selectGroupFieldTip": "The plugin can automatically create selected fields. If mapping is needed, please ensure the field names in the multi-dimensional table are consistent with the option names. It is recommended that the 'Blogger' field type be text, 'xx Count' field types be numeric, and 'xx Time' fields be date. The 'Total Interaction Count' field can be calculated from multiple fields."
   },
   "labels": {
     "link": "Link",
@@ -32,18 +37,19 @@
   },
   "placeholder": {
     "link": "Please select the field column corresponding to the video link",
-    "interCount": "Please select all the field columns that need to be calculated",
-    "cookie": "Please enter the cookie as per the help guide",
-    "xSCommon": "Please enter X-S-Common as per the help guide"
+    "interCount": "Please select all fields that need to be calculated",
+    "cookie": "Please input the cookie as per the instruction manual",
+    "xSCommon": "Please input X-S-Common as per the instruction manual"
   },
   "detailMode": "Enable Detailed Mode",
   "submit": "Retrieve Data",
-  "helpTip": "For the help guide, please see here 👉️",
+  "helpTip": "For help guide, please see here 👉️",
   "errorTip": {
     "emptyNoteLink": "Incorrect article link address",
-    "errorLink": "Incorrect link format, please refer to the documentation",
-    "errorLinkType": "Incorrect field type, please set as text type",
-    "errorRequest": "Cookie error or request timed out"
+    "errorLink": "Link format error, please check the instruction manual",
+    "errorLinkType": "Field type error, please set as text type",
+    "errorRequest": "Cookie error or request timeout"
   },
-  "finishTip": "Data retrieval complete, number of failed requests:"
+  "finishTip": "Data retrieval completed, number of failed requests:"
+
 }

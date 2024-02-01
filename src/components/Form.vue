@@ -13,7 +13,7 @@
 
     <el-form-item style="margin-top: 40px;" :label="$t('labels.link')" size="large" required>
       <el-select v-model="linkFieldId" :placeholder="$t('placeholder.link')" style="width: 100%">
-        <el-option v-for="meta in fieldListSeView" :key="meta.id" :label="meta.name" :value="meta.id" />
+        <el-option v-for="meta in mainFieldListSeView" :key="meta.id" :label="meta.name" :value="meta.id" />
       </el-select>
     </el-form-item>
     
@@ -82,10 +82,12 @@ import qs from 'qs';
 
 // -- 数据区域
 const { t } = useI18n();
-const fieldListSeView = ref([])
+const mainFieldListSeView = ref([])
+const historyFieldListSeView = ref([])
 const linkFieldId = ref('')  // 链接字段Id
 
 const isWritingData = ref(false)
+let historyTable
 const isDetailMode = ref(false)
 const checkAllToMap = ref(false)
 const isIndeterminateToMap = ref(true)
@@ -122,6 +124,9 @@ const fieldsToMap = ref([
   },
   {
     "label": "fetchDataTime"
+  },
+  {
+    "label": "errorTip"
   }
 ])   //  可以创建的字段
 const checkedFieldsToMap = ref([
@@ -134,7 +139,8 @@ const checkedFieldsToMap = ref([
   'likeCount',
   'shareCount',
   'commentCount',
-  'fetchDataTime'
+  'fetchDataTime',
+  'errorTip'
 ])   // 默认的to-map的字段
 
 const toCalcInterCount = ref(['likeCount','collectionCount', 'shareCount', 'commentCount'])  // 实际用于计算“总交互量”的字段
@@ -152,26 +158,39 @@ const issubmitAbled = computed(() => {
 
 })  // 是否允许提交，及必选字段是否都填写
 
-const mappedFieldIds = ref({})
-
+const mappedFieldIds = ref({
+  "main": {},  // 主表
+  "history": {}  // 历史记录 表
+})
 
 // -- 核心算法区域
 // --001== 写入数据
 const writeData = async () => {
+  errorCount.value = 0
   if (isWritingData.value) {
     isForcedEnd.value = true
   }
   isWritingData.value = true
 
-  // 获取字段数据Ids object类型，匹配已有的字段，创建缺少的字段
-  // @status {mappedFieldIds, isWritingData}  表示是命令性质的方法，改变mappedFieldIds对象的状态
-  await completeMappedFieldIdsValue() 
-  console.log("writeData() >> finished mappedFieldIds", mappedFieldIds.value)
-  
+
   // 加载bitable实例
   const { tableId, viewId } = await bitable.base.getSelection();
   const table = await bitable.base.getActiveTable();
   const view = await table.getViewById(viewId);
+
+  // 错误判断：应当在主表中进行
+  if (table.id == historyTable.id) {
+    bitable.ui.showToast({
+      toastType: 'warning',
+      message: t('notAllowedInHistoryTable')
+    })
+    isWritingData.value = false
+    return
+  } 
+
+  // 获取字段数据Ids object类型，匹配已有的字段，创建缺少的字段
+  // @status {mappedFieldIds, isWritingData}  表示是命令性质的方法，改变mappedFieldIds对象的状态
+  await completeMappedFieldIdsValue()
 
   // ## mode1: 全部记录
   const RecordList = await view.getVisibleRecordIdList()
@@ -193,73 +212,35 @@ const writeData = async () => {
     console.log("writeData() >> recordId", recordId)
 
 
-    // 错误处理，链接字段格式错误，应为文本类型
-    const linkField = await table.getFieldMetaById(linkFieldId.value)
-    if (linkField.type !== 1) {
-      await bitable.ui.showToast({
-        toastType: 'warning',
-        message: `[${linkField.name}] ${t('errorTip.errorLinkType')}`
-      })
-      isWritingData.value = false
+    /** 错误处理函数 
+     * {param}: recordId
+     * {return} noteLink、totalNoteInfo
+    */
+    console.log(218)
+    let handleErrorRes = await handleError(recordId)
+    console.log(handleErrorRes)
+    if (handleErrorRes.isError)
+      continue
+    else if (handleErrorRes.isReturn)
       return
-    }
     
-    // 错误处理：链接地址为空
-    let noteLink
-    try {
-      noteLink = await getCellValueByRFIDS(recordId, linkFieldId.value)
-    } catch (error) {
-      await bitable.ui.showToast({
-        toastType: 'warning',
-        message: t('errorTip.emptyNoteLink')
-      })
-      errorCount.value ++
-      continue;
-    }
+    const {noteLink, totalNoteInfo} = handleErrorRes
+    console.log(227)
 
-
-    // 错误处理：链接格式错误
-    if (!noteLink.includes('xiaohongshu')) {
-      await bitable.ui.showToast({
-        toastType: 'warning',
-        message: t('errorTip.errorLink')
-      })
-      errorCount.value ++
-      continue;
-    }
-
-
-    console.log("writeData() >> noteLink", noteLink)
-    let totalNoteInfo;
-    try {
-      totalNoteInfo = await getDataByCheckedFields(noteLink)
-      console.log("writeData() >> totalNoteInfo", totalNoteInfo)
-    } catch (error) {
-      await bitable.ui.showToast({
-        toastType: 'warning',
-        message: t('errorTip.errorRequest')
-      })
-      return;
-    }
     
-
-    for (let field of checkedFieldsToMap.value) {
-      console.log("field", field)
-      if (field == 'uploader' || field == 'title') {  // up主字段和标题字段，Text 格式
-        await table.setCellValue(mappedFieldIds.value[field], recordId, [{ type: 'text', text: totalNoteInfo.basicInfo[field] }])
-      } else if (field.endsWith('Count') && field !== 'totalInterCount') {  // xx量字段，Number格式 注：总互动量字段单独处理
-        await table.setCellValue(mappedFieldIds.value[field], recordId, totalNoteInfo.basicInfo[field])
-      } else if (field.endsWith('Time') && field !== 'fetchDataTime') { // 发布时间，datetime格式
-        const datetimeFieldId = await table.getFieldById(mappedFieldIds.value[field])
-        datetimeFieldId.setValue(recordId, totalNoteInfo.basicInfo[field])
-      } else if (field === 'fetchDataTime') { // 数据获取时间，datetime格式
-        const datetimeFieldId = await table.getFieldById(mappedFieldIds.value[field])
-        datetimeFieldId.setValue(recordId, Date.now())
-      } else if (field === 'totalInterCount') { // 总互动量
-        const totalInterCount = toCalcInterCount.value.reduce((total, key) => total + totalNoteInfo.basicInfo[key], 0);
-        await table.setCellValue(mappedFieldIds.value[field], recordId, totalInterCount)
-      }
-    }
+    /** 
+     * 命令式，但不改变任何对象的状态
+     * @param {object} totalNoteInfo 
+     * @param {object} table 数据表
+     * @param {string} recordId 记录ID
+     * @param {object} mappedFieldIds 映射字段Ids 
+     */
+    console.log(444)
+    await getAndSetRecordValue(totalNoteInfo, table, recordId, mappedFieldIds.value.main)
+    console.log(1111)
+    await getAndAddRecordValue(totalNoteInfo, historyTable, mappedFieldIds.value.history, noteLink)
+    console.log(222)
+    
 
   }
 
@@ -286,7 +267,7 @@ const getSelectedFieldsId = (fieldList, checkedFields) => {
     // 查找与checkedFields相匹配的fieldListSeView项目
     const foundField = fieldList.find(f => f.name ===  t(`selectGroup.videoInfo.${field}`));
 
-    if ( ( field.endsWith('量') || field.endsWith('Count') ) && foundField && foundField.type !== 2)
+    if (field.endsWith('Count') && foundField && foundField.type !== 2)
       return ` [${t(`selectGroup.videoInfo.${field}`)}] ${t(`checks.number`)}` 
     else if (field == t('selectGroup.videoInfo.uploader') && foundField && foundField.type !== 1)
       return ` [${t(`selectGroup.videoInfo.${field}`)}] ${t(`checks.text`)}`
@@ -382,28 +363,43 @@ const getXHSdatabylink = async (path, noteLink) => {
 
 
 // --003== 创建 mappedFieldIds 中 value 为 -1 的字段
-const createFields = async () => {
-  const selection = await bitable.base.getSelection()
-  const table = await bitable.base.getTableById(selection.tableId)
+/**
+ * 命令式，改变mappedFieldIds.value的状态
+ * @param {param} mappedFieldIds 现有的映射字段ids
+ * @param {param} table 当前要处理的table
+ */
+const createFields = async (mappedFieldIds, table) => {
 
-  for (let key in mappedFieldIds.value) {
-    if (mappedFieldIds.value[key] === -1) {
+  for (let key in mappedFieldIds) {
+    if (mappedFieldIds[key] === -1) {
       switch (key) {
         case "title":  // 视频名称
-          mappedFieldIds.value[key] = await table.addField({
+          mappedFieldIds[key] = await table.addField({
             type: FieldType.Text,
             name: t(`selectGroup.videoInfo.title`),
           })
           break;
+        case "link":  // 链接
+          mappedFieldIds[key] = await table.addField({
+            type: FieldType.Text,
+            name: t(`selectGroup.videoInfo.link`),
+          })
+          break;
+        case "errorTip":
+          mappedFieldIds[key] = await table.addField({
+            type: FieldType.Text,
+            name: t(`selectGroup.videoInfo.errorTip`),
+          })
+          break;
         case "uploader": 
-          mappedFieldIds.value[key] = await table.addField({
+          mappedFieldIds[key] = await table.addField({
             type: FieldType.Text,
             name: t(`selectGroup.videoInfo.uploader`),
           })
           break;
         case "releaseTime":
         case "lastUpdateTime":
-          mappedFieldIds.value[key] = await table.addField({
+          mappedFieldIds[key] = await table.addField({
             type: FieldType.DateTime,
             name: t(`selectGroup.videoInfo.${key}`),
           })
@@ -416,20 +412,20 @@ const createFields = async () => {
         case "commentCount":  // 评论量
         case "totalInterCount":  // 总互动量
         case "shareCount":
-          mappedFieldIds.value[key] = await table.addField({
+          mappedFieldIds[key] = await table.addField({
             type: FieldType.Number,
             name: t(`selectGroup.videoInfo.${key}`),
           })
           break;
         case "commentWc":
         case "danmuWc":
-          mappedFieldIds.value[key] = await table.addField({
+          mappedFieldIds[key] = await table.addField({
             type: FieldType.Attachment,
             name: t(`selectGroup.videoInfo.${key}`),
           })
           break;
         case "fetchDataTime":
-          mappedFieldIds.value[key] = await table.addField({
+          mappedFieldIds[key] = await table.addField({
             type: FieldType.DateTime,
             name: t(`selectGroup.videoInfo.${key}`),
           })
@@ -468,10 +464,22 @@ const getDataByCheckedFields = async(noteLink) => {
  * @status {mappedFieldIds, isWritingData}  表示是命令性质的方法，改变mappedFieldIds对象的状态
  */ 
 const completeMappedFieldIdsValue = async () => {
+  const selection = await bitable.base.getSelection()
+  const table = await bitable.base.getTableById(selection.tableId)
+
   // 匹配已有的字段
-  const mappedFields = getSelectedFieldsId(fieldListSeView.value, checkedFieldsToMap.value)
-  console.log("writeData() >> original mappedFields", mappedFields)
-  if (typeof mappedFields == 'string') {// 错误处理，提示格式错误 
+  const mainMappedFields = getSelectedFieldsId(mainFieldListSeView.value, checkedFieldsToMap.value)
+  // 历史记录表的 “视频链接” 字段
+  let historyCheckedFields = JSON.parse(JSON.stringify(checkedFieldsToMap.value))
+  historyCheckedFields.push('link')
+  console.log(386, historyCheckedFields)
+  let result = historyCheckedFields.filter(item => item != 'errorTip')
+  console.log(388, result)
+
+  const historyMappedFields = getSelectedFieldsId(historyFieldListSeView.value, result)
+  
+
+  if (typeof mainMappedFields == 'string' || typeof historyMappedFields == 'string') {// 错误处理，提示格式错误 
     await bitable.ui.showToast({
       toastType: 'warning',
       message: mappedFields
@@ -481,8 +489,146 @@ const completeMappedFieldIdsValue = async () => {
   }
 
   // 创建缺少的字段
-  mappedFieldIds.value = mappedFields
-  await createFields()
+  mappedFieldIds.value.main = mainMappedFields
+  mappedFieldIds.value.history = historyMappedFields
+  await createFields(mappedFieldIds.value.main, table)
+  await createFields(mappedFieldIds.value.history, historyTable)
+  console.log(222)
+
+  console.log("completeMappedFieldIdsValue() => mappedFieldIds", mappedFieldIds.value)
+}
+
+/** --007== 错误处理 
+ * @status {} 命令性质，写入 errorTip Field
+ * 
+ * 
+*/
+const handleErrorTip = async (errorMsg, recordId) => {
+  const table = await bitable.base.getActiveTable();
+
+
+  errorCount.value++
+  await table.setCellValue(mappedFieldIds.value.main['errorTip'], recordId, [{ type: 'text', text: errorMsg }])
+}
+
+/**
+ * --008== 处理数据写入中的异常
+ * @param {string} recordId
+ * @return {Promise<noteLink、totalNoteInfo、isError、isReturn>} 
+ */
+const handleError = async (recordId) => { 
+  // 错误处理，链接字段格式错误，应为文本类型
+  const table = await bitable.base.getActiveTable();
+
+  const linkField = await table.getFieldMetaById(linkFieldId.value)
+  if (linkField.type !== 1) {
+    await handleErrorTip(`[${linkField.name}] ${t('errorTip.errorLinkType')}`, recordId)
+    isWritingData.value = false
+    return {"isReturn": true}
+  }
+
+  // 错误处理：链接地址为空
+  let noteLink
+  try {
+    noteLink = await getCellValueByRFIDS(recordId, linkFieldId.value)
+
+  } catch (error) {
+
+    return {"isError": true}
+  }
+
+  console.log(noteLink)
+  // 错误处理：链接格式错误
+  if (!noteLink.includes('https://www.xiaohongshu.com/explore')) {
+
+    await handleErrorTip(t('errorTip.errorLink'), recordId)
+    return {"isError": true}
+  }
+  console.log(543)
+
+
+  let totalNoteInfo;
+  try {
+    totalNoteInfo = await getDataByCheckedFields(noteLink)
+
+  } catch (error) {
+    await handleErrorTip(totalNoteInfo.basicInfo.result, recordId)
+    return {"isError": true}
+  }
+
+  if (totalNoteInfo.basicInfo.status == -100) {
+    await handleErrorTip(totalNoteInfo.basicInfo.result, recordId)
+    return {"isError": true}
+  }
+
+  return {noteLink, totalNoteInfo}
+}
+
+/**
+ * --009== 获取并设置特定 table 的特定 record 的特定字段集合的 Value
+ * @param {object} totalNoteInfo 
+ * @param {object} table 数据表
+ * @param {string} recordId 记录ID
+ * @param {object} mappedFieldIds 映射字段Ids 
+ */
+const getAndSetRecordValue = async (totalNoteInfo, table, recordId, mappedFieldIds) => {
+  const recordFields = getRecordFields(totalNoteInfo, mappedFieldIds)
+  console.log(recordFields)
+
+
+  await table.setRecord(recordId, {
+    fields: recordFields
+  })
+}
+
+const getAndAddRecordValue = async (totalNoteInfo, table, mappedFieldIds, noteLink) => {
+  
+  const recordFields = getRecordFields(totalNoteInfo, mappedFieldIds, noteLink)
+  console.log(recordFields)
+
+
+  await table.addRecord({
+    fields: recordFields
+  })
+}
+
+/**
+ * 查询式，获取 recordFields
+ * @param {object} totalNoteInfo 笔记数据
+ * @param {object} mappedFieldIds 字段链接
+ */
+const getRecordFields = (totalNoteInfo, mappedFieldIds, noteLink=0) => {
+  let recordFields = {}
+  let key = ''
+  let value = ''
+  let fetchDataTimeValue = Date.now()
+  console.log(mappedFieldIds)
+  let checkedFields = JSON.parse(JSON.stringify(checkedFieldsToMap.value))
+  if (noteLink)
+    checkedFields = checkedFields.filter(item => item != 'errorTip')
+  for (let field of checkedFields) {
+
+    key = mappedFieldIds[field]
+
+    if (field === 'fetchDataTime') 
+      value = fetchDataTimeValue
+    else if (field === 'totalInterCount') 
+      value = toCalcInterCount.value.reduce((total, key) => total + totalNoteInfo.basicInfo[key], 0); 
+    else 
+      value = totalNoteInfo.basicInfo[field]
+    
+    
+    recordFields[key] = value
+  }
+
+  // 打个补丁，链接字段
+  console.log(535, noteLink)
+  console.log(534, mappedFieldIds['link'])
+  if (noteLink) 
+    recordFields[mappedFieldIds['link']] = noteLink
+  
+
+  return recordFields
 }
 
 
@@ -519,11 +665,29 @@ onMounted(async () => {
   const selection = await bitable.base.getSelection()
   const table = await bitable.base.getTableById(selection.tableId)
   const view = await table.getViewById(selection.viewId)
-  fieldListSeView.value = await view.getFieldMetaList()
-  console.log("onMounted >> 多维表格字段", fieldListSeView.value)
-  console.log("onMounted >> 已选中的b站数据字段", checkedFieldsToMap.value)
+  mainFieldListSeView.value = await view.getFieldMetaList()
+  console.log("mainFieldListSeView", mainFieldListSeView.value)
   // 获取字段列表 -- end
   
+
+  // 历史记录表
+  try {
+    historyTable = await bitable.base.getTableByName(t('history.tableName'));
+    
+  } catch (error) {
+    console.log(error)
+    const { tableId, index } = await bitable.base.addTable({
+        name: t('history.tableName')
+    })
+
+    historyTable = await bitable.base.getTableById(tableId)
+    
+  }
+
+  historyFieldListSeView.value = await historyTable.getFieldMetaList()
+  console.log("historyFieldListSeView", historyFieldListSeView.value)
+
+
 
   // 初始化可参与计算 “总交互量” 的对象数组，以“Count”结尾的
   allToCalcInterCount.value = fieldsToMap.value

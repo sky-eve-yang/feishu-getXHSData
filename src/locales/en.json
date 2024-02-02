@@ -8,7 +8,7 @@
       "releaseTime": "Release Time",
       "lastUpdateTime": "Last Update Time",
       "collectionCount": "Collection Count",
-      "likeCount": "Likes Count",
+      "likeCount": "Like Count",
       "shareCount": "Share Count",
       "commentCount": "Comment Count",
       "totalInterCount": "Total Interaction Count",
@@ -18,11 +18,11 @@
     }
   },
   "history": {
-    "tableName": "History Records"
+    "tableName": "History Record"
   },
   "alerts": {
-    "selectNumberField": "Retrieve data like title, likes count, etc., based on Xiaohongshu article link",
-    "selectGroupFieldTip": "The plugin can automatically create selected fields. If mapping is needed, please ensure the field names in the multi-dimensional table are consistent with the option names. It is recommended that the 'Blogger' field type be text, 'xx Count' field types be numeric, and 'xx Time' fields be date. The 'Total Interaction Count' field can be calculated from multiple fields."
+    "selectNumberField": "Based on Xiaohongshu article link, retrieve data like title, like count, etc.",
+    "selectGroupFieldTip": "The plugin can automatically create selected fields. If mapping is needed, please ensure the field names in the multidimensional table match the option names. It's recommended that the 'Blogger' field type is text, 'xx Count' field types are numbers, 'xx Time' fields are dates. 'Total Interaction Count' field can be calculated from multiple fields"
   },
   "labels": {
     "link": "Link",
@@ -30,26 +30,25 @@
     "xSCommon": "X-S-Common"
   },
   "checks": {
-    "number": "Type Check Failed: Type is not a number",
-    "text": "Type Check Failed: Type is not text",
-    "datetime": "Type Check Failed: Type is not a date",
-    "attachment": "Type Check Failed: Type is not an attachment"
+    "number": "Type validation failed: Type is not a number",
+    "text": "Type validation failed: Type is not text",
+    "datetime": "Type validation failed: Type is not a date",
+    "attachment": "Type validation failed: Type is not an attachment"
   },
   "placeholder": {
     "link": "Please select the field column corresponding to the video link",
-    "interCount": "Please select all fields that need to be calculated",
-    "cookie": "Please input the cookie as per the instruction manual",
-    "xSCommon": "Please input X-S-Common as per the instruction manual"
+    "interCount": "Please select all the fields that need to be calculated",
+    "cookie": "Please enter cookie as per the instruction document",
+    "xSCommon": "Please enter X-S-Common as per the instruction document"
   },
   "detailMode": "Enable Detailed Mode",
   "submit": "Retrieve Data",
-  "helpTip": "For help guide, please see here 👉️",
+  "helpTip": "For help guide, please check here 👉️",
   "errorTip": {
-    "emptyNoteLink": "Incorrect article link address",
-    "errorLink": "Link format error, please check the instruction manual",
-    "errorLinkType": "Field type error, please set as text type",
+    "emptyNoteLink": "Article link address error",
+    "errorLink": "Link format error, please check the instruction document",
+    "errorLinkType": "Field type error, please set as text type or link type",
     "errorRequest": "Cookie error or request timeout"
   },
-  "finishTip": "Data retrieval completed, number of failed requests:"
-
+  "finishTip": "Data retrieval complete, number of failed requests:"
 }

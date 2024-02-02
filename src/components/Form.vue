@@ -225,7 +225,7 @@ const writeData = async () => {
       return
     
     const {noteLink, totalNoteInfo} = handleErrorRes
-    console.log(227)
+    console.log(227, noteLink)
 
     
     /** 
@@ -438,14 +438,14 @@ const createFields = async (mappedFieldIds, table) => {
   
 }
 
-// --004== 依据 recordId & filedId 获取 cell 值
-const getCellValueByRFIDS = async (recordId, fieldId) => {
-  const selection = await bitable.base.getSelection();
-  const table = await bitable.base.getTableById(selection.tableId);
-  const cellValue = await table.getCellValue(fieldId, recordId)
+// --004== 依据 recordId & field 获取 cell 值
+const getCellValueByRFIDS = async (recordId, field) => {
+  console.log(443, field)
 
+  const cellValue = await field.getValue(recordId)
+  console.log(445, cellValue)
   if (typeof cellValue == 'object')
-    return cellValue[0].text
+    return cellValue[0].link
 
   return cellValue
 }
@@ -520,9 +520,13 @@ const handleError = async (recordId) => {
   // 错误处理，链接字段格式错误，应为文本类型
   const table = await bitable.base.getActiveTable();
 
-  const linkField = await table.getFieldMetaById(linkFieldId.value)
-  if (linkField.type !== 1) {
-    await handleErrorTip(`[${linkField.name}] ${t('errorTip.errorLinkType')}`, recordId)
+  const linkFieldMeta = await table.getFieldMetaById(linkFieldId.value)
+  const linkField = await table.getFieldById(linkFieldId.value)
+  console.log(524, linkField)
+  console.log(525, linkFieldMeta)
+  console.log(526, linkFieldMeta.type)
+  if (linkFieldMeta.type !== 1 && linkFieldMeta.type !== 15) {
+    await handleErrorTip(`[${linkFieldMeta.name}] ${t('errorTip.errorLinkType')}`, recordId)
     isWritingData.value = false
     return {"isReturn": true}
   }
@@ -530,14 +534,14 @@ const handleError = async (recordId) => {
   // 错误处理：链接地址为空
   let noteLink
   try {
-    noteLink = await getCellValueByRFIDS(recordId, linkFieldId.value)
+    noteLink = await getCellValueByRFIDS(recordId, linkField)
 
   } catch (error) {
-
+    
     return {"isError": true}
   }
 
-  console.log(noteLink)
+  console.log(540, noteLink)
   // 错误处理：链接格式错误
   if (!noteLink.includes('https://www.xiaohongshu.com/explore')) {
 
@@ -604,8 +608,8 @@ const getRecordFields = (totalNoteInfo, mappedFieldIds, noteLink=0) => {
   let fetchDataTimeValue = Date.now()
   console.log(mappedFieldIds)
   let checkedFields = JSON.parse(JSON.stringify(checkedFieldsToMap.value))
-  if (noteLink)
-    checkedFields = checkedFields.filter(item => item != 'errorTip')
+  
+  checkedFields = checkedFields.filter(item => item != 'errorTip')
   for (let field of checkedFields) {
 
     key = mappedFieldIds[field]
@@ -622,8 +626,8 @@ const getRecordFields = (totalNoteInfo, mappedFieldIds, noteLink=0) => {
   }
 
   // 打个补丁，链接字段
-  console.log(535, noteLink)
-  console.log(534, mappedFieldIds['link'])
+  console.log(629, noteLink)
+  console.log(630, mappedFieldIds['link'])
   if (noteLink) 
     recordFields[mappedFieldIds['link']] = noteLink
   

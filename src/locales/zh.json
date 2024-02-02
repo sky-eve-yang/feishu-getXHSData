@@ -47,7 +47,7 @@
   "errorTip": {
     "emptyNoteLink": "文章链接地址错误",
     "errorLink": "链接格式错误，请查看说明文档",
-    "errorLinkType": "字段类型错误，请设置为文本类型",
+    "errorLinkType": "字段类型错误，请设置为文本类型或链接类型",
     "errorRequest": "Cookie 错误或请求超时"
   },
   "finishTip": "数据获取完成, 请求失败数："

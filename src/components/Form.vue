@@ -99,6 +99,12 @@ const fieldsToMap = ref([
     "label": "uploader"
   },
   {
+    "label": "content"
+  },
+  {
+    "label": "tags"
+  },
+  {
     "label": "releaseTime"
   },
   {
@@ -132,6 +138,8 @@ const fieldsToMap = ref([
 const checkedFieldsToMap = ref([
   'title',
   'uploader',
+  'content',
+  'tags',
   'releaseTime',
   'lastUpdateTime',
   // 'viewCount',
@@ -269,7 +277,7 @@ const getSelectedFieldsId = (fieldList, checkedFields) => {
 
     if (field.endsWith('Count') && foundField && foundField.type !== 2)
       return ` [${t(`selectGroup.videoInfo.${field}`)}] ${t(`checks.number`)}` 
-    else if (field == t('selectGroup.videoInfo.uploader') && foundField && foundField.type !== 1)
+    else if ((field == t('selectGroup.videoInfo.uploader') || field == t('selectGroup.videoInfo.content') || field == t('selectGroup.videoInfo.tags') ) && foundField && foundField.type !== 1)
       return ` [${t(`selectGroup.videoInfo.${field}`)}] ${t(`checks.text`)}`
     else if (field == t('selectGroup.videoInfo.releaseTime') && foundField && foundField.type !== 5)
       return ` [${t(`selectGroup.videoInfo.${field}`)}] ${t(`checks.datetime`)}`
@@ -332,13 +340,19 @@ const getXHSdatabylink = async (path, noteLink) => {
     };
     await axios(config)
       .then(function (response) {
-        console.log("getXHSdatabylink() >> response.data || res", response.data);
+        console.log('\x1b[33m%s\x1b[0m', "getXHSdatabylink() >> response.data || res", response.data);
         let noteInfo = response.data.info.data.items[0].note_card
+
+        const names = noteInfo.tag_list.map(topic => topic.name);
+        const namesString = names.join(', ');
+
         res = {
           "status": 200,
           "info": {
             "title": noteInfo.title,
             "uploader": noteInfo.user.nickname,
+            "content": noteInfo.desc,
+            "tags": namesString,
             "releaseTime": noteInfo.time,
             "lastUpdateTime": noteInfo.last_update_time,
             "collectionCount": Number(noteInfo.interact_info.collected_count) ,
@@ -350,6 +364,7 @@ const getXHSdatabylink = async (path, noteLink) => {
       })
       .catch(function (error) {
         console.log(error);
+        res = error.message
       });
   } 
 
@@ -373,10 +388,11 @@ const createFields = async (mappedFieldIds, table) => {
   for (let key in mappedFieldIds) {
     if (mappedFieldIds[key] === -1) {
       switch (key) {
+        
         case "title":  // 视频名称
           mappedFieldIds[key] = await table.addField({
             type: FieldType.Text,
-            name: t(`selectGroup.videoInfo.title`),
+            name: t(`selectGroup.videoInfo.${key}`),
           })
           break;
         case "link":  // 链接
@@ -392,9 +408,11 @@ const createFields = async (mappedFieldIds, table) => {
           })
           break;
         case "uploader": 
+        case "content":
+        case "tags":
           mappedFieldIds[key] = await table.addField({
             type: FieldType.Text,
-            name: t(`selectGroup.videoInfo.uploader`),
+            name: t(`selectGroup.videoInfo.${key}`),
           })
           break;
         case "releaseTime":
@@ -455,7 +473,7 @@ const getDataByCheckedFields = async(noteLink) => {
 
   let path = isDetailMode.value ? 'get_xhs_detail_data' : 'get_xhs_rough_data'
   let basicInfo = await getXHSdatabylink(path, noteLink)
-
+  console.log("basicInfo", basicInfo)
   return {basicInfo}
 }
 
@@ -586,7 +604,8 @@ const getAndSetRecordValue = async (totalNoteInfo, table, recordId, mappedFieldI
 }
 
 const getAndAddRecordValue = async (totalNoteInfo, table, mappedFieldIds, noteLink) => {
-  
+  console.log("111111", noteLink)
+
   const recordFields = getRecordFields(totalNoteInfo, mappedFieldIds, noteLink)
   console.log(recordFields)
 

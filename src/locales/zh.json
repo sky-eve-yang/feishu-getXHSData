@@ -3,17 +3,19 @@
   "selectGroup": {
     "selectAll": "全选",
     "videoInfo": {
+      "link": "链接",
       "title": "标题",
       "uploader": "博主",
-      "releaseTime": "发布时间",
-      "lastUpdateTime": "最后更新时间",
+      "content": "文案",
+      "tags": "标签",
       "collectionCount": "收藏量",
       "likeCount": "点赞量",
       "shareCount": "转发量",
       "commentCount": "评论量",
       "totalInterCount": "总互动量",
+      "releaseTime": "发布时间",
+      "lastUpdateTime": "最后更新时间",
       "fetchDataTime": "数据获取时间",
-      "link": "链接",
       "errorTip": "报错信息"
     }
   },

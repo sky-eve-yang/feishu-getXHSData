@@ -723,7 +723,7 @@ onMounted(async () => {
   console.log("onMounted >> allToCalcInterCount", allToCalcInterCount.value);
 
   if (localStorage.getItem('isDetailMode') !== null) {  // string 类型
-    isDetailMode.value = localStorage.getItem('isDetailMode')
+    isDetailMode.value = Boolean(localStorage.getItem('isDetailMode'))
   }
   if (localStorage.getItem('cookie') !== null) {  // string 类型
     cookie.value = localStorage.getItem('cookie')

@@ -54,13 +54,16 @@
     </div>
   
     <el-form-item v-if="isDetailMode" style="margin-top: 20px;" :label="$t('labels.cookie')" size="large" required>
+      <div class="cookie-tip">当 Cookie 过期后，笔记的互动数据将显示为近似值，如整十或整百。请更新 Cookie 以获取精确数据。</div>
       <el-input v-model="cookie" type="text" :placeholder="$t('placeholder.cookie')"></el-input>
       
     </el-form-item>
-    <el-form-item v-if="isDetailMode" style="margin-top: 20px;" :label="$t('labels.xSCommon')" size="large" required>
+
+    <!--2024-07-24 版本已经不需要填写 x-s-common -->
+    <!-- <el-form-item v-if="isDetailMode" style="margin-top: 20px;" :label="$t('labels.xSCommon')" size="large" required>
       <el-input v-model="xSCommon" type="text" :placeholder="$t('placeholder.xSCommon')"></el-input>
       
-    </el-form-item>
+    </el-form-item> -->
 
     <!-- 选择对应的字段映射 -->
 
@@ -81,7 +84,7 @@ import qs from 'qs';
 
 // -- 可更改区域
 // TODO: 可替换为相应的后端服务基地址，注意末尾没有斜杠
-const baseUrl = ref('https://feishu-get-xhs-data-backend-wuyi.replit.app')  
+const baseUrl = ref('https://sky-eve-yang.com.cn:82')  
 
 
 // -- 数据区域
@@ -166,7 +169,7 @@ const issubmitAbled = computed(() => {
   if (!isDetailMode.value)
     return linkFieldId.value && checkedFieldsToMap.value.length
   else 
-    return linkFieldId.value && checkedFieldsToMap.value.length && cookie.value && xSCommon.value
+    return linkFieldId.value && checkedFieldsToMap.value.length && cookie.value
 
 })  // 是否允许提交，及必选字段是否都填写
 
@@ -303,7 +306,6 @@ const getSelectedFieldsId = (fieldList, checkedFields) => {
 /* @param:path
 * get_xhs_rough_data-获取基本数据
 * get_xhs_detail_data-获取详细数据
-* generate_barrage_wordcloud-获取弹幕词云
 */
 const getXHSdatabylink = async (path, noteLink) => {
   
@@ -331,10 +333,11 @@ const getXHSdatabylink = async (path, noteLink) => {
         console.log(error);
       });
   } else if (path === 'get_xhs_detail_data') { // 获取详细数据，需要进行接口归一化处理
+    console.log("url", url)
+    console.log("cookie", cookie.value)
     var data = qs.stringify({
       'url': noteLink,
-      'cookie': cookie.value,
-      'xSCommon': xSCommon.value
+      'cookie': cookie.value
     });
 
     var config = {
@@ -342,27 +345,26 @@ const getXHSdatabylink = async (path, noteLink) => {
       url: url,
       data : data
     };
+    
     await axios(config)
       .then(function (response) {
-        console.log('\x1b[33m%s\x1b[0m', "getXHSdatabylink() >> response.data || res", response.data);
-        let noteInfo = response.data.info.data.items[0].note_card
-
-        const names = noteInfo.tag_list.map(topic => topic.name);
-        const namesString = names.join(', ');
+        console.log("getXHSdatabylink() >> response.data || res", response.data);
+        let noteInfo = response.data.info
 
         res = {
           "status": 200,
           "info": {
             "title": noteInfo.title,
-            "uploader": noteInfo.user.nickname,
-            "content": noteInfo.desc,
-            "tags": namesString,
-            "releaseTime": noteInfo.time,
-            "lastUpdateTime": noteInfo.last_update_time,
-            "collectionCount": Number(noteInfo.interact_info.collected_count) ,
-            "likeCount": Number(noteInfo.interact_info.liked_count),
-            "shareCount": Number(noteInfo.interact_info.share_count),
-            "commentCount": Number(noteInfo.interact_info.comment_count) 
+            "uploader": noteInfo.uploader,
+            "content": noteInfo.content,
+            "tags": noteInfo.keywords,
+            "releaseTime": noteInfo.releaseTime,
+            "lastUpdateTime": noteInfo.lastUpdateTime,
+            "collectionCount": noteInfo.collectionCount,
+            "likeCount": noteInfo.likeCount,
+            "shareCount": noteInfo.shareCount,
+            "commentCount": noteInfo.commentCount,
+            "images": noteInfo.images
           }
         }
       })
@@ -750,5 +752,12 @@ onMounted(async () => {
 }
 .helper-doc a:hover {
   color: #7abcff;
+}
+
+.cookie-tip {
+  font-size: 14px;
+  color: #a29d9d;
+  line-height: 1.5;
+  margin-bottom: 20px;
 }
 </style>

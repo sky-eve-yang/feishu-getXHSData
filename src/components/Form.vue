@@ -562,12 +562,12 @@ const handleError = async (recordId) => {
 
   } catch (error) {
     
-    return {"isError": true}
+    return {"isError": true, "isReturn": false}
   }
 
   console.log(540, noteLink)
   // 错误处理：链接格式错误
-  if (!noteLink.includes('https://www.xiaohongshu.com/explore')) {
+  if (!noteLink.includes('https://www.xiaohongshu.com/explore') && !noteLink.includes('xhslink.com/')) {
 
     await handleErrorTip(t('errorTip.errorLink'), recordId)
     return {"isError": true}

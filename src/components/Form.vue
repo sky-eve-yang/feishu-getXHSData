@@ -1,22 +1,24 @@
 <template>
   <el-form ref="form" class="form" label-position="top">
-    <div style="width: 100%;padding-left: 10px;border-left: 5px solid #2598f8;margin-bottom: 20px;padding-top: 5px;">{{ $t('title') }}</div>
+    <div style="width: 100%;padding-left: 10px;border-left: 5px solid #2598f8;margin-bottom: 20px;padding-top: 5px;">{{
+      $t('title') }}</div>
     <el-alert style="margin: 20px 0;color: #606266;" :title="$t('alerts.selectNumberField')" type="info" />
     <div class="helper-doc">
       <span>{{ $t('helpTip') }}</span>
       <span style="height: 16px;width: 16px;margin-left: 12px;">
-        <a href="https://jfsq6znqku.feishu.cn/wiki/T4z9wWK88inr5zkQqhtcwUCSnSf?from=from_copylink" target="_blank"><span>说明文档</span></a>
+        <a href="https://jfsq6znqku.feishu.cn/wiki/T4z9wWK88inr5zkQqhtcwUCSnSf?from=from_copylink"
+          target="_blank"><span>说明文档</span></a>
       </span>
-      
+
     </div>
-    
+
 
     <el-form-item style="margin-top: 40px;" :label="$t('labels.link')" size="large" required>
       <el-select v-model="linkFieldId" :placeholder="$t('placeholder.link')" style="width: 100%">
         <el-option v-for="meta in mainFieldListSeView" :key="meta.id" :label="meta.name" :value="meta.id" />
       </el-select>
     </el-form-item>
-    
+
     <!-- 多选框 -->
     <div class="map-fields-checklist">
       <el-checkbox v-model="checkAllToMap" :indeterminate="isIndeterminateToMap" @change="handlecheckAllToMapChange">{{
@@ -28,35 +30,26 @@
       </el-checkbox-group>
     </div>
     <div style="margin-top: 20px;" v-if="checkedFieldsToMap.includes('totalInterCount')">
-      <el-select
-        
-        v-model="toCalcInterCount"
-        multiple
-        :placeholder="$t('placeholder.interCount')"
-        style="width: 100%;"
-        size="large"
-      >
-        <el-option
-          v-for="item in allToCalcInterCount"
-          :key="item.label"
-          :label="$t(`selectGroup.videoInfo.${item.label}`)"
-          :value="item.label"
-        />
+      <el-select v-model="toCalcInterCount" multiple :placeholder="$t('placeholder.interCount')" style="width: 100%;"
+        size="large">
+        <el-option v-for="item in allToCalcInterCount" :key="item.label"
+          :label="$t(`selectGroup.videoInfo.${item.label}`)" :value="item.label" />
       </el-select>
     </div>
-    <el-alert style="display: flex;align-items: flex-start;margin: 20px 0;background-color: #e1eaff;color: #606266;" :title="$t('alerts.selectGroupFieldTip')" type="info" show-icon />
-    
+    <el-alert style="display: flex;align-items: flex-start;margin: 20px 0;background-color: #e1eaff;color: #606266;"
+      :title="$t('alerts.selectGroupFieldTip')" type="info" show-icon />
+
     <div style="display: flex;flex-direction: row;align-items: center;">
       <el-checkbox v-model="isDetailMode" :label="t('detailMode')" size="large" />
 
-      
-      
+
+
     </div>
-  
+
     <el-form-item v-if="isDetailMode" style="margin-top: 20px;" :label="$t('labels.cookie')" size="large" required>
       <div class="cookie-tip">当 Cookie 过期后，笔记的互动数据将显示为近似值，如整十或整百。请更新 Cookie 以获取精确数据。</div>
       <el-input v-model="cookie" type="text" :placeholder="$t('placeholder.cookie')"></el-input>
-      
+
     </el-form-item>
 
     <!--2024-07-24 版本已经不需要填写 x-s-common -->
@@ -69,10 +62,9 @@
 
 
     <!-- 提交按钮 -->
-    <el-button v-loading="isWritingData" @click="writeData" :disabled="!issubmitAbled" color="#3370ff" type="primary" plain size="large">{{ $t('submit') }}</el-button>
+    <el-button v-loading="isWritingData" @click="writeData" :disabled="!issubmitAbled" color="#3370ff" type="primary"
+      plain size="large">{{ $t('submit') }}</el-button>
   </el-form>
-    
-  
 </template>
 
 <script setup>
@@ -84,7 +76,7 @@ import qs from 'qs';
 
 // -- 可更改区域
 // TODO: 可替换为相应的后端服务基地址，注意末尾没有斜杠
-const baseUrl = ref('https://sky-eve-yang.com.cn:82')  
+const baseUrl = ref('https://feishu-xhs-assistant-nixiang-wuyi.replit.app')
 
 
 // -- 数据区域
@@ -158,7 +150,7 @@ const checkedFieldsToMap = ref([
   'errorTip'
 ])   // 默认的to-map的字段
 
-const toCalcInterCount = ref(['likeCount','collectionCount', 'shareCount', 'commentCount'])  // 实际用于计算“总交互量”的字段
+const toCalcInterCount = ref(['likeCount', 'collectionCount', 'shareCount', 'commentCount'])  // 实际用于计算“总交互量”的字段
 const allToCalcInterCount = ref({})  // 可用于计算"总交互量"的字段
 const cookie = ref('')
 const xSCommon = ref('')
@@ -168,7 +160,7 @@ const errorCount = ref(0)
 const issubmitAbled = computed(() => {
   if (!isDetailMode.value)
     return linkFieldId.value && checkedFieldsToMap.value.length
-  else 
+  else
     return linkFieldId.value && checkedFieldsToMap.value.length && cookie.value
 
 })  // 是否允许提交，及必选字段是否都填写
@@ -201,7 +193,7 @@ const writeData = async () => {
     })
     isWritingData.value = false
     return
-  } 
+  }
 
   // 获取字段数据Ids object类型，匹配已有的字段，创建缺少的字段
   // @status {mappedFieldIds, isWritingData}  表示是命令性质的方法，改变mappedFieldIds对象的状态
@@ -238,11 +230,11 @@ const writeData = async () => {
       continue
     else if (handleErrorRes.isReturn)
       return
-    
-    const {noteLink, totalNoteInfo} = handleErrorRes
+
+    const { noteLink, totalNoteInfo } = handleErrorRes
     console.log(227, noteLink)
 
-    
+
     /** 
      * 命令式，但不改变任何对象的状态
      * @param {object} totalNoteInfo 
@@ -255,7 +247,7 @@ const writeData = async () => {
     console.log(1111)
     await getAndAddRecordValue(totalNoteInfo, historyTable, mappedFieldIds.value.history, noteLink)
     console.log(222)
-    
+
 
   }
 
@@ -265,9 +257,9 @@ const writeData = async () => {
     message: `${t('finishTip')} ${errorCount.value}`
   })
 
-  
-  
-  
+
+
+
 }
 
 
@@ -280,26 +272,26 @@ const getSelectedFieldsId = (fieldList, checkedFields) => {
   const mappedFields = {};
   for (let field of checkedFields) {
     // 查找与checkedFields相匹配的fieldListSeView项目
-    const foundField = fieldList.find(f => f.name ===  t(`selectGroup.videoInfo.${field}`));
+    const foundField = fieldList.find(f => f.name === t(`selectGroup.videoInfo.${field}`));
 
     if (field.endsWith('Count') && foundField && foundField.type !== 2)
-      return ` [${t(`selectGroup.videoInfo.${field}`)}] ${t(`checks.number`)}` 
-    else if ((field == t('selectGroup.videoInfo.uploader') || field == t('selectGroup.videoInfo.content') || field == t('selectGroup.videoInfo.tags') ) && foundField && foundField.type !== 1)
+      return ` [${t(`selectGroup.videoInfo.${field}`)}] ${t(`checks.number`)}`
+    else if ((field == t('selectGroup.videoInfo.uploader') || field == t('selectGroup.videoInfo.content') || field == t('selectGroup.videoInfo.tags')) && foundField && foundField.type !== 1)
       return ` [${t(`selectGroup.videoInfo.${field}`)}] ${t(`checks.text`)}`
     else if (field == t('selectGroup.videoInfo.releaseTime') && foundField && foundField.type !== 5)
       return ` [${t(`selectGroup.videoInfo.${field}`)}] ${t(`checks.datetime`)}`
     else if (field == t('selectGroup.videoInfo.lastUpdateTime') && foundField && foundField.type !== 5)
       return ` [${t(`selectGroup.videoInfo.${field}`)}] ${t(`checks.datetime`)}`
 
-    
+
     // 如果找到了相应的项目，就使用其id，否则设置为-1
     mappedFields[field] = foundField ? foundField.id : -1;
   }
-    
+
 
 
   return mappedFields;
-} 
+}
 
 
 // --002== 请求在replit写的flask框架的接口，获取基本数据
@@ -308,7 +300,7 @@ const getSelectedFieldsId = (fieldList, checkedFields) => {
 * get_xhs_detail_data-获取详细数据
 */
 const getXHSdatabylink = async (path, noteLink) => {
-  
+
   var url = `${baseUrl.value}/${path}`
   // var url = `https://b38518d2-23ba-4ef1-bb13-9d8618f01f35-00-271zcrskr9ata.worf.replit.dev/${path}`
   let res;
@@ -321,7 +313,7 @@ const getXHSdatabylink = async (path, noteLink) => {
     var config = {
       method: 'post',
       url: url,
-      data : data
+      data: data
     };
 
     await axios(config)
@@ -343,28 +335,30 @@ const getXHSdatabylink = async (path, noteLink) => {
     var config = {
       method: 'post',
       url: url,
-      data : data
+      data: data
     };
-    
+
     await axios(config)
       .then(function (response) {
-        console.log("getXHSdatabylink() >> response.data || res", response.data);
-        let noteInfo = response.data.info
+        console.log('\x1b[33m%s\x1b[0m', "getXHSdatabylink() >> response.data || res", response.data);
+        let noteInfo = response.data.info.data.items[0].note_card
+
+        const names = noteInfo.tag_list.map(topic => topic.name);
+        const namesString = names.join(', ');
 
         res = {
           "status": 200,
           "info": {
             "title": noteInfo.title,
-            "uploader": noteInfo.uploader,
-            "content": noteInfo.content,
-            "tags": noteInfo.keywords,
-            "releaseTime": noteInfo.releaseTime,
-            "lastUpdateTime": noteInfo.lastUpdateTime,
-            "collectionCount": noteInfo.collectionCount,
-            "likeCount": noteInfo.likeCount,
-            "shareCount": noteInfo.shareCount,
-            "commentCount": noteInfo.commentCount,
-            "images": noteInfo.images
+            "uploader": noteInfo.user.nickname,
+            "content": noteInfo.desc,
+            "tags": namesString,
+            "releaseTime": noteInfo.time,
+            "lastUpdateTime": noteInfo.last_update_time,
+            "collectionCount": Number(noteInfo.interact_info.collected_count) ,
+            "likeCount": Number(noteInfo.interact_info.liked_count),
+            "shareCount": Number(noteInfo.interact_info.share_count),
+            "commentCount": Number(noteInfo.interact_info.comment_count) 
           }
         }
       })
@@ -372,15 +366,15 @@ const getXHSdatabylink = async (path, noteLink) => {
         console.log(error);
         res = error.message
       });
-  } 
+  }
 
   if (res.status === 200)
     return res.info
-  else 
-    return {"status": "-100", "result": res}
-    
-  
-};  
+  else
+    return { "status": "-100", "result": res }
+
+
+};
 
 
 // --003== 创建 mappedFieldIds 中 value 为 -1 的字段
@@ -394,7 +388,7 @@ const createFields = async (mappedFieldIds, table) => {
   for (let key in mappedFieldIds) {
     if (mappedFieldIds[key] === -1) {
       switch (key) {
-        
+
         case "title":  // 视频名称
           mappedFieldIds[key] = await table.addField({
             type: FieldType.Text,
@@ -413,7 +407,7 @@ const createFields = async (mappedFieldIds, table) => {
             name: t(`selectGroup.videoInfo.errorTip`),
           })
           break;
-        case "uploader": 
+        case "uploader":
         case "content":
         case "tags":
           mappedFieldIds[key] = await table.addField({
@@ -456,10 +450,10 @@ const createFields = async (mappedFieldIds, table) => {
           break;
       }
     }
-    
-    
+
+
   }
-  
+
 }
 
 // --004== 依据 recordId & field 获取 cell 值
@@ -475,18 +469,18 @@ const getCellValueByRFIDS = async (recordId, field) => {
 }
 
 // --005== 依据 checkedFiledsToMap 做不同的请求处理
-const getDataByCheckedFields = async(noteLink) => {
+const getDataByCheckedFields = async (noteLink) => {
 
   let path = isDetailMode.value ? 'get_xhs_detail_data' : 'get_xhs_rough_data'
   let basicInfo = await getXHSdatabylink(path, noteLink)
   console.log("basicInfo", basicInfo)
-  return {basicInfo}
+  return { basicInfo }
 }
 
 /** --006== 补全mappedFieldIds对象的值，使得拿到所有字段数据Ids object类型
  * 匹配已有的字段，创建缺少的字段
  * @status {mappedFieldIds, isWritingData}  表示是命令性质的方法，改变mappedFieldIds对象的状态
- */ 
+ */
 const completeMappedFieldIdsValue = async () => {
   const selection = await bitable.base.getSelection()
   const table = await bitable.base.getTableById(selection.tableId)
@@ -501,7 +495,7 @@ const completeMappedFieldIdsValue = async () => {
   console.log(388, result)
 
   const historyMappedFields = getSelectedFieldsId(historyFieldListSeView.value, result)
-  
+
 
   if (typeof mainMappedFields == 'string' || typeof historyMappedFields == 'string') {// 错误处理，提示格式错误 
     await bitable.ui.showToast({
@@ -540,7 +534,7 @@ const handleErrorTip = async (errorMsg, recordId) => {
  * @param {string} recordId
  * @return {Promise<noteLink、totalNoteInfo、isError、isReturn>} 
  */
-const handleError = async (recordId) => { 
+const handleError = async (recordId) => {
   // 错误处理，链接字段格式错误，应为文本类型
   const table = await bitable.base.getActiveTable();
 
@@ -552,7 +546,7 @@ const handleError = async (recordId) => {
   if (linkFieldMeta.type !== 1 && linkFieldMeta.type !== 15) {
     await handleErrorTip(`[${linkFieldMeta.name}] ${t('errorTip.errorLinkType')}`, recordId)
     isWritingData.value = false
-    return {"isReturn": true}
+    return { "isReturn": true }
   }
 
   // 错误处理：链接地址为空
@@ -561,8 +555,8 @@ const handleError = async (recordId) => {
     noteLink = await getCellValueByRFIDS(recordId, linkField)
 
   } catch (error) {
-    
-    return {"isError": true, "isReturn": false}
+
+    return { "isError": true, "isReturn": false }
   }
 
   console.log(540, noteLink)
@@ -570,7 +564,7 @@ const handleError = async (recordId) => {
   if (!noteLink.includes('https://www.xiaohongshu.com/explore') && !noteLink.includes('xhslink.com/')) {
 
     await handleErrorTip(t('errorTip.errorLink'), recordId)
-    return {"isError": true}
+    return { "isError": true }
   }
   console.log(543)
 
@@ -581,15 +575,15 @@ const handleError = async (recordId) => {
 
   } catch (error) {
     await handleErrorTip(totalNoteInfo.basicInfo.result, recordId)
-    return {"isError": true}
+    return { "isError": true }
   }
 
   if (totalNoteInfo.basicInfo.status == -100) {
     await handleErrorTip(totalNoteInfo.basicInfo.result, recordId)
-    return {"isError": true}
+    return { "isError": true }
   }
 
-  return {noteLink, totalNoteInfo}
+  return { noteLink, totalNoteInfo }
 }
 
 /**
@@ -626,36 +620,36 @@ const getAndAddRecordValue = async (totalNoteInfo, table, mappedFieldIds, noteLi
  * @param {object} totalNoteInfo 笔记数据
  * @param {object} mappedFieldIds 字段链接
  */
-const getRecordFields = (totalNoteInfo, mappedFieldIds, noteLink=0) => {
+const getRecordFields = (totalNoteInfo, mappedFieldIds, noteLink = 0) => {
   let recordFields = {}
   let key = ''
   let value = ''
   let fetchDataTimeValue = Date.now()
   console.log(mappedFieldIds)
   let checkedFields = JSON.parse(JSON.stringify(checkedFieldsToMap.value))
-  
+
   checkedFields = checkedFields.filter(item => item != 'errorTip')
   for (let field of checkedFields) {
 
     key = mappedFieldIds[field]
 
-    if (field === 'fetchDataTime') 
+    if (field === 'fetchDataTime')
       value = fetchDataTimeValue
-    else if (field === 'totalInterCount') 
-      value = toCalcInterCount.value.reduce((total, key) => total + totalNoteInfo.basicInfo[key], 0); 
-    else 
+    else if (field === 'totalInterCount')
+      value = toCalcInterCount.value.reduce((total, key) => total + totalNoteInfo.basicInfo[key], 0);
+    else
       value = totalNoteInfo.basicInfo[field]
-    
-    
+
+
     recordFields[key] = value
   }
 
   // 打个补丁，链接字段
   console.log(629, noteLink)
   console.log(630, mappedFieldIds['link'])
-  if (noteLink) 
+  if (noteLink)
     recordFields[mappedFieldIds['link']] = noteLink
-  
+
 
   return recordFields
 }
@@ -697,20 +691,20 @@ onMounted(async () => {
   mainFieldListSeView.value = await view.getFieldMetaList()
   console.log("mainFieldListSeView", mainFieldListSeView.value)
   // 获取字段列表 -- end
-  
+
 
   // 历史记录表
   try {
     historyTable = await bitable.base.getTableByName(t('history.tableName'));
-    
+
   } catch (error) {
     console.log(error)
     const { tableId, index } = await bitable.base.addTable({
-        name: t('history.tableName')
+      name: t('history.tableName')
     })
 
     historyTable = await bitable.base.getTableById(tableId)
-    
+
   }
 
   historyFieldListSeView.value = await historyTable.getFieldMetaList()
@@ -733,23 +727,25 @@ onMounted(async () => {
   if (localStorage.getItem('xSCommon') !== null) {  // string 类型
     xSCommon.value = localStorage.getItem('xSCommon')
   }
-  
+
 
 });
-    
+
 </script>
 
 
 
 <style scoped>
 .helper-doc {
-  
+
   margin-top: -10px;
   font-size: 14px;
 }
+
 .helper-doc a {
   color: #409eff;
 }
+
 .helper-doc a:hover {
   color: #7abcff;
 }

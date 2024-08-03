@@ -70,7 +70,7 @@ import qs from 'qs';
 
 // -- 可更改区域
 // TODO: 可替换为相应的后端服务基地址，注意末尾没有斜杠
-const baseUrl = ref('https://feishu-xhs-assistant-directrequest-wuyi.replit.app')
+const baseUrl = ref('https://feishu-xhs-assistant-nixiang-wuyi.replit.app')
 
 // -- 数据区域
 const { t } = useI18n();

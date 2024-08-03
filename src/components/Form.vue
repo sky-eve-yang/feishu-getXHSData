@@ -39,15 +39,9 @@
     <el-alert style="display: flex;align-items: flex-start;margin: 20px 0;background-color: #e1eaff;color: #606266;"
       :title="$t('alerts.selectGroupFieldTip')" type="info" show-icon />
 
-    <div style="display: flex;flex-direction: row;align-items: center;">
-      <el-checkbox v-model="isDetailMode" :label="t('detailMode')" size="large" />
 
-
-
-    </div>
-
-    <el-form-item v-if="isDetailMode" style="margin-top: 20px;" :label="$t('labels.cookie')" size="large" required>
-      <div class="cookie-tip">当 Cookie 过期后，笔记的互动数据将显示为近似值，如整十或整百。请更新 Cookie 以获取精确数据。</div>
+    <el-form-item v-if="isDetailMode" style="margin-top: 20px;" :label="$t('labels.cookie')" size="large">
+      <div class="cookie-tip">当 Cookie 不填或过期后，笔记的互动数据将显示为近似值，如整十或整百。可参考说明文档更新 Cookie 以获取精确数据。</div>
       <el-input v-model="cookie" type="text" :placeholder="$t('placeholder.cookie')"></el-input>
 
     </el-form-item>
@@ -76,8 +70,7 @@ import qs from 'qs';
 
 // -- 可更改区域
 // TODO: 可替换为相应的后端服务基地址，注意末尾没有斜杠
-const baseUrl = ref('https://feishu-xhs-assistant-nixiang-wuyi.replit.app')
-
+const baseUrl = ref('https://feishu-xhs-assistant-directrequest-wuyi.replit.app')
 
 // -- 数据区域
 const { t } = useI18n();
@@ -87,7 +80,7 @@ const linkFieldId = ref('')  // 链接字段Id
 
 const isWritingData = ref(false)
 let historyTable
-const isDetailMode = ref(false)
+const isDetailMode = ref(true)
 const checkAllToMap = ref(false)
 const isIndeterminateToMap = ref(true)
 const fieldsToMap = ref([
@@ -161,7 +154,7 @@ const issubmitAbled = computed(() => {
   if (!isDetailMode.value)
     return linkFieldId.value && checkedFieldsToMap.value.length
   else
-    return linkFieldId.value && checkedFieldsToMap.value.length && cookie.value
+    return linkFieldId.value && checkedFieldsToMap.value.length
 
 })  // 是否允许提交，及必选字段是否都填写
 
@@ -340,25 +333,23 @@ const getXHSdatabylink = async (path, noteLink) => {
 
     await axios(config)
       .then(function (response) {
-        console.log('\x1b[33m%s\x1b[0m', "getXHSdatabylink() >> response.data || res", response.data);
-        let noteInfo = response.data.info.data.items[0].note_card
-
-        const names = noteInfo.tag_list.map(topic => topic.name);
-        const namesString = names.join(', ');
+        console.log("getXHSdatabylink() >> response.data || res", response.data);
+        let noteInfo = response.data.info
 
         res = {
           "status": 200,
           "info": {
             "title": noteInfo.title,
-            "uploader": noteInfo.user.nickname,
-            "content": noteInfo.desc,
-            "tags": namesString,
-            "releaseTime": noteInfo.time,
-            "lastUpdateTime": noteInfo.last_update_time,
-            "collectionCount": Number(noteInfo.interact_info.collected_count) ,
-            "likeCount": Number(noteInfo.interact_info.liked_count),
-            "shareCount": Number(noteInfo.interact_info.share_count),
-            "commentCount": Number(noteInfo.interact_info.comment_count) 
+            "uploader": noteInfo.uploader,
+            "content": noteInfo.content,
+            "tags": noteInfo.keywords,
+            "releaseTime": noteInfo.releaseTime,
+            "lastUpdateTime": noteInfo.lastUpdateTime,
+            "collectionCount": noteInfo.collectionCount,
+            "likeCount": noteInfo.likeCount,
+            "shareCount": noteInfo.shareCount,
+            "commentCount": noteInfo.commentCount,
+            "images": noteInfo.images
           }
         }
       })

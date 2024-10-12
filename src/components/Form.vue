@@ -70,7 +70,7 @@ import qs from 'qs';
 
 // -- 可更改区域
 // TODO: 可替换为相应的后端服务基地址，注意末尾没有斜杠
-const baseUrl = ref('https://feishu-xhs-assistant-directrequest-wuyi.replit.app')
+const baseUrl = ref('https://feishu-xhs-assistant-nixiang-wuyi.replit.app')
 
 // -- 数据区域
 const { t } = useI18n();
@@ -552,7 +552,7 @@ const handleError = async (recordId) => {
 
   console.log(540, noteLink)
   // 错误处理：链接格式错误
-  if (!noteLink.includes('https://www.xiaohongshu.com/explore') && !noteLink.includes('xhslink.com/')) {
+  if (!noteLink.includes('https://www.xiaohongshu.com/') && !noteLink.includes('xhslink.com/')) {
 
     await handleErrorTip(t('errorTip.errorLink'), recordId)
     return { "isError": true }

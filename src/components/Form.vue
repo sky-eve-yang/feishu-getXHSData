@@ -74,7 +74,7 @@ import qs from 'qs';
 import Reward from '@/components/Reward.vue'; // 确保路径正确
 // -- 可更改区域
 // TODO: 可替换为相应的后端服务基地址，注意末尾没有斜杠
-const baseUrl = ref('https://a372fbd5-bbde-4c8a-9814-c05d3f6e9f10-00-10560io9tg53w.spock.replit.dev')
+const baseUrl = ref('https://feishu-xhs-assistant-nixiang-wuyi.replit.app')
 
 // -- 数据区域
 const { t } = useI18n();

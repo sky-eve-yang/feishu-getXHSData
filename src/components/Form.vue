@@ -58,26 +58,32 @@
     <!-- 提交按钮 -->
     <el-button v-loading="isWritingData" @click="writeData" :disabled="!issubmitAbled" color="#3370ff" type="primary"
       plain size="large">{{ $t('submit') }}</el-button>
+
+    <div v-show="isShowReward" style="padding-bottom: 50px;">
+      <reward author="无意" :qrCode="qrCode" />
+    </div>
   </el-form>
 </template>
 
 <script setup>
 import { bitable, FieldType } from '@lark-base-open/js-sdk';
 import { useI18n } from 'vue-i18n';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, isShallow } from 'vue';
 import axios from 'axios';
 import qs from 'qs';
-
+import Reward from '@/components/Reward.vue'; // 确保路径正确
 // -- 可更改区域
 // TODO: 可替换为相应的后端服务基地址，注意末尾没有斜杠
-const baseUrl = ref('https://feishu-xhs-assistant-nixiang-wuyi.replit.app')
+const baseUrl = ref('https://a372fbd5-bbde-4c8a-9814-c05d3f6e9f10-00-10560io9tg53w.spock.replit.dev')
 
 // -- 数据区域
 const { t } = useI18n();
 const mainFieldListSeView = ref([])
 const historyFieldListSeView = ref([])
 const linkFieldId = ref('')  // 链接字段Id
+const isShowReward = ref(false)
 
+const qrCode = ref('./src/assets/qrCode.jpg'); // 你的二维码图片路径
 const isWritingData = ref(false)
 let historyTable
 const isDetailMode = ref(true)
@@ -166,6 +172,7 @@ const mappedFieldIds = ref({
 // -- 核心算法区域
 // --001== 写入数据
 const writeData = async () => {
+  isShowReward.value = false
   errorCount.value = 0
   if (isWritingData.value) {
     isForcedEnd.value = true
@@ -193,10 +200,14 @@ const writeData = async () => {
   await completeMappedFieldIdsValue()
 
   // ## mode1: 全部记录
-  const RecordList = await view.getVisibleRecordIdList()
+  // const RecordList = await view.getVisibleRecordIdList()
 
   // ## model2: 交互式选择记录 
-  // const RecordList = await bitable.ui.selectRecordIdList(tableId, viewId);
+  const RecordList = await bitable.ui.selectRecordIdList(tableId, viewId);
+
+  // ## model3: 获取表格直接选中的记录
+  // const RecordList = await table.getSelectedRecordIdList()
+  console.log("RecordList", RecordList)
 
   localStorage.setItem('cookie', cookie.value)   // string 类型
   localStorage.setItem('xSCommon', xSCommon.value)   // string 类型
@@ -235,16 +246,15 @@ const writeData = async () => {
      * @param {string} recordId 记录ID
      * @param {object} mappedFieldIds 映射字段Ids 
      */
-    console.log(444)
+
     await getAndSetRecordValue(totalNoteInfo, table, recordId, mappedFieldIds.value.main)
-    console.log(1111)
     await getAndAddRecordValue(totalNoteInfo, historyTable, mappedFieldIds.value.history, noteLink)
-    console.log(222)
 
 
   }
 
   isWritingData.value = false
+  isShowReward.value = true
   await bitable.ui.showToast({
     toastType: 'success',
     message: `${t('finishTip')} ${errorCount.value}`
@@ -289,82 +299,43 @@ const getSelectedFieldsId = (fieldList, checkedFields) => {
 
 // --002== 请求在replit写的flask框架的接口，获取基本数据
 /* @param:path
-* get_xhs_rough_data-获取基本数据
 * get_xhs_detail_data-获取详细数据
 */
 const getXHSdatabylink = async (path, noteLink) => {
+  const url = `${baseUrl.value}/${path}`;
+  const data = {
+    url: noteLink,
+    cookie: cookie.value
+  };
 
-  var url = `${baseUrl.value}/${path}`
-  // var url = `https://b38518d2-23ba-4ef1-bb13-9d8618f01f35-00-271zcrskr9ata.worf.replit.dev/${path}`
-  let res;
+  try {
+    const response = await axios.post(url, qs.stringify(data));
 
-  if (path === 'get_xhs_rough_data') {
-    var data = qs.stringify({
-      'url': noteLink
-    });
-
-    var config = {
-      method: 'post',
-      url: url,
-      data: data
+    const noteInfo = response.data.info;
+    const res = {
+      status: 200,
+      info: {
+        title: noteInfo.title,
+        uploader: noteInfo.uploader,
+        content: noteInfo.content,
+        tags: noteInfo.tags,
+        releaseTime: noteInfo.releaseTime,
+        lastUpdateTime: noteInfo.lastUpdateTime,
+        collectionCount: noteInfo.collectionCount,
+        likeCount: noteInfo.likeCount,
+        shareCount: noteInfo.shareCount,
+        commentCount: noteInfo.commentCount,
+        images: noteInfo.images
+      }
     };
 
-    await axios(config)
-      .then(function (response) {
-        console.log("getXHSdatabylink() >> response.data || res", response.data);
-        res = response.data
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-  } else if (path === 'get_xhs_detail_data') { // 获取详细数据，需要进行接口归一化处理
-    console.log("url", url)
-    console.log("cookie", cookie.value)
-    var data = qs.stringify({
-      'url': noteLink,
-      'cookie': cookie.value
-    });
-
-    var config = {
-      method: 'post',
-      url: url,
-      data: data
-    };
-
-    await axios(config)
-      .then(function (response) {
-        console.log("getXHSdatabylink() >> response.data || res", response.data);
-        let noteInfo = response.data.info
-
-        res = {
-          "status": 200,
-          "info": {
-            "title": noteInfo.title,
-            "uploader": noteInfo.uploader,
-            "content": noteInfo.content,
-            "tags": noteInfo.keywords,
-            "releaseTime": noteInfo.releaseTime,
-            "lastUpdateTime": noteInfo.lastUpdateTime,
-            "collectionCount": noteInfo.collectionCount,
-            "likeCount": noteInfo.likeCount,
-            "shareCount": noteInfo.shareCount,
-            "commentCount": noteInfo.commentCount,
-            "images": noteInfo.images
-          }
-        }
-      })
-      .catch(function (error) {
-        console.log(error);
-        res = error.message
-      });
+    return res.status === 200 ? res.info : { status: "-100", result: res };
+  } catch (error) {
+    console.error(error);
+    const errorResponse = error.response ? error.response.data.error : error.message;
+    console.log("getXHSdatabylink() >> errorResponse", errorResponse)
+    return { status: "-100", result: errorResponse };
   }
-
-  if (res.status === 200)
-    return res.info
-  else
-    return { "status": "-100", "result": res }
-
-
 };
 
 
@@ -449,10 +420,7 @@ const createFields = async (mappedFieldIds, table) => {
 
 // --004== 依据 recordId & field 获取 cell 值
 const getCellValueByRFIDS = async (recordId, field) => {
-  console.log(443, field)
-
   const cellValue = await field.getValue(recordId)
-  console.log(445, cellValue)
   if (typeof cellValue == 'object')
     return cellValue[0].link
 
@@ -461,10 +429,7 @@ const getCellValueByRFIDS = async (recordId, field) => {
 
 // --005== 依据 checkedFiledsToMap 做不同的请求处理
 const getDataByCheckedFields = async (noteLink) => {
-
-  let path = isDetailMode.value ? 'get_xhs_detail_data' : 'get_xhs_rough_data'
-  let basicInfo = await getXHSdatabylink(path, noteLink)
-  console.log("basicInfo", basicInfo)
+  let basicInfo = await getXHSdatabylink('get_xhs_detail_data', noteLink)
   return { basicInfo }
 }
 
@@ -481,9 +446,7 @@ const completeMappedFieldIdsValue = async () => {
   // 历史记录表的 “视频链接” 字段
   let historyCheckedFields = JSON.parse(JSON.stringify(checkedFieldsToMap.value))
   historyCheckedFields.push('link')
-  console.log(386, historyCheckedFields)
   let result = historyCheckedFields.filter(item => item != 'errorTip')
-  console.log(388, result)
 
   const historyMappedFields = getSelectedFieldsId(historyFieldListSeView.value, result)
 
@@ -502,9 +465,6 @@ const completeMappedFieldIdsValue = async () => {
   mappedFieldIds.value.history = historyMappedFields
   await createFields(mappedFieldIds.value.main, table)
   await createFields(mappedFieldIds.value.history, historyTable)
-  console.log(222)
-
-  console.log("completeMappedFieldIdsValue() => mappedFieldIds", mappedFieldIds.value)
 }
 
 /** --007== 错误处理 
@@ -531,9 +491,6 @@ const handleError = async (recordId) => {
 
   const linkFieldMeta = await table.getFieldMetaById(linkFieldId.value)
   const linkField = await table.getFieldById(linkFieldId.value)
-  console.log(524, linkField)
-  console.log(525, linkFieldMeta)
-  console.log(526, linkFieldMeta.type)
   if (linkFieldMeta.type !== 1 && linkFieldMeta.type !== 15) {
     await handleErrorTip(`[${linkFieldMeta.name}] ${t('errorTip.errorLinkType')}`, recordId)
     isWritingData.value = false
@@ -556,18 +513,11 @@ const handleError = async (recordId) => {
 
     await handleErrorTip(t('errorTip.errorLink'), recordId)
     return { "isError": true }
-  }
-  console.log(543)
+  } 
+  console.log("noteLink", noteLink)
 
 
-  let totalNoteInfo;
-  try {
-    totalNoteInfo = await getDataByCheckedFields(noteLink)
-
-  } catch (error) {
-    await handleErrorTip(totalNoteInfo.basicInfo.result, recordId)
-    return { "isError": true }
-  }
+  let totalNoteInfo = await getDataByCheckedFields(noteLink)
 
   if (totalNoteInfo.basicInfo.status == -100) {
     await handleErrorTip(totalNoteInfo.basicInfo.result, recordId)
@@ -636,8 +586,6 @@ const getRecordFields = (totalNoteInfo, mappedFieldIds, noteLink = 0) => {
   }
 
   // 打个补丁，链接字段
-  console.log(629, noteLink)
-  console.log(630, mappedFieldIds['link'])
   if (noteLink)
     recordFields[mappedFieldIds['link']] = noteLink
 
@@ -649,7 +597,6 @@ const getRecordFields = (totalNoteInfo, mappedFieldIds, noteLink = 0) => {
 // Map==全选事件
 const handlecheckAllToMapChange = (val) => {
   const data = JSON.parse(JSON.stringify(fieldsToMap.value))
-  console.log("val", val)
   if (val) {
     checkedFieldsToMap.value = []
     for (const item of data)
@@ -666,8 +613,6 @@ const handleCheckedFieldsToMapChange = (value) => {
   const checkedCount = value.length
   checkAllToMap.value = checkedCount === fieldsToMap.value.length
   isIndeterminateToMap.value = checkedCount > 0 && checkedCount < fieldsToMap.value.length
-  console.log('checkedFieldsToMap:', checkedFieldsToMap.value)
-
 }
 
 
@@ -680,7 +625,6 @@ onMounted(async () => {
   const table = await bitable.base.getTableById(selection.tableId)
   const view = await table.getViewById(selection.viewId)
   mainFieldListSeView.value = await view.getFieldMetaList()
-  console.log("mainFieldListSeView", mainFieldListSeView.value)
   // 获取字段列表 -- end
 
 
@@ -689,7 +633,6 @@ onMounted(async () => {
     historyTable = await bitable.base.getTableByName(t('history.tableName'));
 
   } catch (error) {
-    console.log(error)
     const { tableId, index } = await bitable.base.addTable({
       name: t('history.tableName')
     })
@@ -699,15 +642,11 @@ onMounted(async () => {
   }
 
   historyFieldListSeView.value = await historyTable.getFieldMetaList()
-  console.log("historyFieldListSeView", historyFieldListSeView.value)
-
 
 
   // 初始化可参与计算 “总交互量” 的对象数组，以“Count”结尾的
   allToCalcInterCount.value = fieldsToMap.value
     .filter(item => item.label.endsWith('Count'));
-
-  console.log("onMounted >> allToCalcInterCount", allToCalcInterCount.value);
 
   if (localStorage.getItem('isDetailMode') !== null) {  // string 类型
     isDetailMode.value = Boolean(localStorage.getItem('isDetailMode'))

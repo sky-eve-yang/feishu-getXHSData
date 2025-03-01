@@ -667,7 +667,7 @@ onMounted(async () => {
 
   if (localStorage.getItem('isDetailMode') !== null) {  // string 类型
     isDetailMode.value = Boolean(localStorage.getItem('isDetailMode'))
-  }
+  }ox
   if (localStorage.getItem('cookie') !== null) {  // string 类型
     cookie.value = localStorage.getItem('cookie')
   }
